@@ -3,22 +3,35 @@ package random
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
-const numberRunes = "0123456789"
+const (
+	numberRunes   = "0123456789"
+	numberIdxBits = 4
+	numberIdxMask = 1<<numberIdxBits - 1
+)
 
 //RandomNumString 返回一个指定长度的数字字符串
 func RandomNumString(length int) string {
-	if length < 0 {
+	if length <= 0 {
 		return ""
 	}
-	s := make([]byte, length)
-	rand.Seed(time.Now().UnixNano())
-	for i := range s {
-		// 10 是阿拉伯数字个数
-		//TODO: 这个生成方式太浪费了
-		s[i] = numberRunes[rand.Intn(10)]
+	sb := strings.Builder{}
+	sb.Grow(length)
+	var dice int64
+	writeLen := 0
+	for writeLen < length {
+		if dice == 0 {
+			dice = rand.Int63()
+		}
+		idx := int(dice & numberIdxMask)
+		if idx < 9 {
+			sb.WriteByte(numberRunes[idx])
+			writeLen++
+		}
+		dice >>= numberIdxBits
 	}
-	return string(s)
+	return sb.String()
 }
