@@ -11,7 +11,7 @@ const (
 func Mode() int {
 	env := Config().GetString("env")
 	switch env {
-	case "dev", "":
+	case "dev", "", "debug":
 		return Dev
 	case "test":
 		return Test
