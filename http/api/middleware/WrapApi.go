@@ -4,6 +4,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xieqiaoyu/xin"
@@ -86,16 +87,19 @@ func XinRESTfulWrapper(c *gin.Context) {
 
 	if errExists {
 		var errMsgString string
+		var isInternalError bool
 		switch t := errMsg.(type) {
 		case string:
-			errMsgString = errMsg.(string)
+			errMsgString = t
 		case error:
-			errMsgString = errMsg.(error).Error()
+			errMsgString = t.Error()
+			var internalErr *xin.InternalError
+			isInternalError = errors.As(t, &internalErr)
 		default:
 			xlog.WriteWarning("Unexpected ErrMsg type %T\n", t)
 		}
 		//http 状态码 > 500 在正式环境应该屏蔽错误输出并将错误输入到日志中
-		if httpStatus >= 500 && (xin.Mode() == xin.Release) {
+		if (httpStatus >= 500 || isInternalError) && (xin.Mode() == xin.Release) {
 			//TODO: 更加详细的记录包括请求header 和 body
 			xlog.WriteError("%s return status %d with error message:%s", c.Request.URL.Path, httpStatus, errMsgString)
 		} else {

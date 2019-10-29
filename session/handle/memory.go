@@ -1,7 +1,7 @@
 package handle
 
 import (
-	"fmt"
+	"github.com/xieqiaoyu/xin"
 	xsession "github.com/xieqiaoyu/xin/session"
 	"sync"
 )
@@ -19,7 +19,7 @@ func (s *Memory) Load(sessionID string) (xsession.Session, bool, error) {
 	}
 	session, ok := v.(xsession.Session)
 	if !ok {
-		return nil, true, fmt.Errorf("session id %s  is not a valid session interface", sessionID)
+		return nil, true, xin.NewInternalError("session id %s  is not a valid session interface", sessionID)
 	}
 	return session, true, nil
 }

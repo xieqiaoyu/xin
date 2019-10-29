@@ -1,6 +1,11 @@
 package api
 
+import (
+	"github.com/gin-gonic/gin"
+)
+
 const (
+	ResultKey = "xinApiResult"
 	//StatusKey context 中使用的api 返回 status key 名称
 	StatusKey = "xinApiStatus"
 	//ErrKey context 中使用的api 返回 error key  名称
@@ -29,3 +34,17 @@ const (
 	//U 用于外部引用UserKey 的shortcut
 	U = UserKey
 )
+
+func SetData(c *gin.Context, data interface{}, code ...int) {
+	c.Set(DataKey, data)
+	if len(code) > 0 {
+		c.Set(StatusKey, code[0])
+	}
+}
+
+func SetError(c *gin.Context, err error, code ...int) {
+	c.Set(ErrKey, err)
+	if len(code) > 0 {
+		c.Set(StatusKey, code[0])
+	}
+}

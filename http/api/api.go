@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/xieqiaoyu/xin"
 	xjsonschema "github.com/xieqiaoyu/xin/util/jsonschema"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func ValidateRequestBodyJSON(c *gin.Context, schemaStr string, obj interface{}) 
 		return errors.New("Empty Request Body")
 	}
 	if err != nil {
-		panic(fmt.Sprintf("Fail to load request data: %s", err))
+		return xin.NewInternalError("Fail to load request data: %w", err)
 	}
 	// 好像不用太关心 json 的valid情况
 	_, err = xjsonschema.ValidJSONString(string(requestBody), schemaStr)
@@ -40,7 +41,7 @@ func CheckReqJSON(c *gin.Context, schemaStr string, obj interface{}) (bool, erro
 	err := ValidateRequestBodyJSON(c, schemaStr, obj)
 	if err != nil {
 		//TODO:目前认为context 直接在这个地方abort 不太好，这样函数就被限制得太死了
-		c.Set(ErrKey, fmt.Sprintf("Check JSON err: %s", err))
+		SetError(c, fmt.Errorf("Check JSON err: %w", err))
 		return false, err
 	}
 	return true, nil

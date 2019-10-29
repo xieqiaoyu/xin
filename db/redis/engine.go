@@ -32,13 +32,13 @@ func Engine(ids ...string) (radix.Client, error) {
 	redisURI := v.GetString(connectionSourceKey)
 	if redisURI == "" {
 		xlog.WithTag("CONFIG").WriteCritical("Fail to get redis uri string, please check config key %s in %s", configSourceKey, v.ConfigFileUsed())
-		return nil, fmt.Errorf("Fail to get redis URI")
+		return nil, xin.NewInternalError("Fail to get redis URI")
 	}
 
 	redisPool, err := radix.NewPool("tcp", redisURI, 10)
 	if err != nil {
 		xlog.WithTag("REDIS").WriteCritical("Fail to connect redis use uri %s, Err:%s", redisURI, err)
-		return nil, fmt.Errorf("Fail to create redis connect pool")
+		return nil, xin.NewInternalError("Fail to create redis connect pool")
 	}
 	instance, loaded := instances.LoadOrStore(id, redisPool)
 	if loaded {
