@@ -19,8 +19,7 @@ func PermissionCheck(apiName string, checkpoints ...CheckPermitFunc) gin.Handler
 			pass, user, err := check(copyC, apiName)
 			if !pass {
 				// 设置http 403 错误
-				c.Set(api.StatusKey, 403)
-				c.Set(api.ErrKey, err)
+				api.SetError(c, err, 403)
 				c.Abort()
 				return
 			}

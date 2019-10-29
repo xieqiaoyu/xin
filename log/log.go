@@ -43,14 +43,14 @@ var _ logLevel = RFC5424SeverityLevel(0)
 
 // 日志的错误级别
 const (
-	Debug     = RFC5424SeverityLevel(7)
-	Info      = RFC5424SeverityLevel(6)
-	Notice    = RFC5424SeverityLevel(5)
-	Warning   = RFC5424SeverityLevel(4)
-	Error     = RFC5424SeverityLevel(3)
-	Critical  = RFC5424SeverityLevel(2)
-	Alert     = RFC5424SeverityLevel(1)
-	Emergency = RFC5424SeverityLevel(0)
+	Debug     RFC5424SeverityLevel = 7
+	Info      RFC5424SeverityLevel = 6
+	Notice    RFC5424SeverityLevel = 5
+	Warning   RFC5424SeverityLevel = 4
+	Error     RFC5424SeverityLevel = 3
+	Critical  RFC5424SeverityLevel = 2
+	Alert     RFC5424SeverityLevel = 1
+	Emergency RFC5424SeverityLevel = 0
 )
 
 // Log 日志结构体
