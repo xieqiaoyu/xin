@@ -21,7 +21,7 @@ func UseRouterRegister(register httpserver.RegistRouterAndMiddlewareFunc) {
 }
 
 //ServerCmd 启动服务器的命令
-func ServerCmd() *cobra.Command {
+func HttpServerCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "http",
 		Short: "http server",
