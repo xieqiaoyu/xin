@@ -22,7 +22,7 @@ func DefaultSessionMarshal(session xsession.Session) ([]byte, error) {
 }
 
 func DefaultSessionUnmarshal(raw []byte) (session xsession.Session, err error) {
-	session = &xsession.MeepoSession{}
+	session = &xsession.XinSession{}
 	b := bytes.Buffer{}
 	b.Write(raw)
 	d := gob.NewDecoder(&b)

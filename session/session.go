@@ -12,44 +12,44 @@ type SessionContent interface {
 	HasNewContent() bool
 }
 
-type MeepoSession struct {
+type XinSession struct {
 	newContent bool
 	Values     map[string]interface{}
 	ttl        int
 }
 
-func (s *MeepoSession) HasNewContent() bool {
+func (s *XinSession) HasNewContent() bool {
 	return s.newContent
 }
 
-func (s *MeepoSession) Get(key string) (interface{}, bool) {
+func (s *XinSession) Get(key string) (interface{}, bool) {
 	v, exists := s.Values[key]
 	return v, exists
 }
 
-func (s *MeepoSession) Set(key string, value interface{}) error {
+func (s *XinSession) Set(key string, value interface{}) error {
 	s.Values[key] = value
 	s.newContent = true
 	return nil
 }
 
-func (s *MeepoSession) Delete(key string) error {
+func (s *XinSession) Delete(key string) error {
 	delete(s.Values, key)
 	s.newContent = true
 	return nil
 }
 
-func (s *MeepoSession) SetTTL(ttl int) error {
+func (s *XinSession) SetTTL(ttl int) error {
 	s.ttl = ttl
 	return nil
 }
 
-func (s *MeepoSession) GetTTL() int {
+func (s *XinSession) GetTTL() int {
 	return s.ttl
 }
 
 func NewSession() Session {
-	return &MeepoSession{
+	return &XinSession{
 		newContent: true,
 		Values:     map[string]interface{}{},
 	}
