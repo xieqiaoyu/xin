@@ -13,11 +13,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "anonymous",
-		Short: "",
-		Long:  ``,
-		Run: func(cmd *cobra.Command, args []string) {
-		},
+		Use: "anonymous",
 	}
 	cfgFile      string
 	configSchema string
@@ -42,6 +38,7 @@ func VerifyConfigBySchema(schema string) {
 //InitConfig 初始化配置文件逻辑,如果读取配置文件失败会报错,这个函数需要手动调用，因为不是所有的命令都需要一个配置文件
 func InitConfig() {
 	viper := xin.Config()
+	// TODO: rewrite in build
 	viper.SetConfigType("toml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -76,6 +73,7 @@ func InitConfig() {
 // Execute Execute
 func Execute() {
 	rootCmd.AddCommand(versionCmd())
+	rootCmd.AddCommand(ConfigTestCmd())
 	if err := rootCmd.Execute(); err != nil {
 		xlog.WriteError(err.Error())
 		os.Exit(1)

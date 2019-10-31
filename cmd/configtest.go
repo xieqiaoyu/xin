@@ -6,10 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	RootCmd().AddCommand(ConfigTestCmd())
-}
-
 //ConfigTestCmd ConfigTestCmd
 func ConfigTestCmd() *cobra.Command {
 	return &cobra.Command{

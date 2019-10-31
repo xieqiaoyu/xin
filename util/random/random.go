@@ -22,6 +22,7 @@ func RandomNumString(length int) string {
 	sb.Grow(length)
 	var dice int64
 	writeLen := 0
+	rand.Seed(time.Now().UnixNano())
 	for writeLen < length {
 		if dice == 0 {
 			dice = rand.Int63()
