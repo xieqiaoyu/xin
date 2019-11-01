@@ -5,7 +5,7 @@ import (
 	"github.com/xieqiaoyu/xin"
 	"sync"
 
-	"github.com/go-xorm/xorm"
+	"xorm.io/xorm"
 	// 需要执行postgres 包的 init
 	_ "github.com/lib/pq"
 )
