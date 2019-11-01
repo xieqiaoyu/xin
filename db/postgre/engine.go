@@ -36,11 +36,11 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 	dbSource := conf.GetString(connectionSourceKey)
 
 	if dbSource == "" {
-		return nil, xin.NewInternalError("Fail to get database source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
+		return nil, xin.WrapE(&xin.InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
 	}
 	dbInstanceTemp, err := xorm.NewEngine("postgres", dbSource)
 	if err != nil {
-		return nil, xin.NewInternalError("Fail to connect database use source string %s, Err:%w", dbSource, err)
+		return nil, xin.WrapE(&xin.InternalError{}, "Fail to connect database use source string %s, Err:%w", dbSource, err)
 
 	}
 

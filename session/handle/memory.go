@@ -19,7 +19,7 @@ func (s *Memory) Load(sessionID string) (xsession.Session, bool, error) {
 	}
 	session, ok := v.(xsession.Session)
 	if !ok {
-		return nil, true, xin.NewInternalError("session id %s  is not a valid session interface", sessionID)
+		return nil, true, xin.WrapE(&xin.InternalError{}, "session id %s  is not a valid session interface", sessionID)
 	}
 	return session, true, nil
 }

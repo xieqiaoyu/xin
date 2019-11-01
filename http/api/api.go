@@ -20,7 +20,7 @@ func ValidateRequestBodyJSON(c *gin.Context, schemaStr string, obj interface{}) 
 		return errors.New("Empty Request Body")
 	}
 	if err != nil {
-		return xin.NewInternalError("Fail to load request data: %w", err)
+		return xin.WrapE(&xin.InternalError{}, "Fail to load request data: %w", err)
 	}
 	// 好像不用太关心 json 的valid情况
 	_, err = xjsonschema.ValidJSONString(string(requestBody), schemaStr)

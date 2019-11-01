@@ -1,25 +1,41 @@
 package xin
 
 import (
+	"errors"
 	"fmt"
 )
 
-//InternalError
-type InternalError struct {
+type WrapError interface {
+	error
+	Wrap(error)
+}
+
+type E struct {
 	Err error
 }
 
-//Error error interface
-func (e *InternalError) Error() string {
+func (e *E) Error() string {
 	return e.Err.Error()
 }
 
-func (e *InternalError) Unwrap() error {
+func (e *E) Unwrap() error {
 	return e.Err
 }
 
-func NewInternalError(format string, a ...interface{}) error {
-	return &InternalError{
-		Err: fmt.Errorf(format, a...),
-	}
+func (e *E) Wrap(err error) {
+	e.Err = err
 }
+
+func WrapE(Err WrapError, format string, a ...interface{}) error {
+	var wErr error
+	if len(a) > 0 {
+		wErr = fmt.Errorf(format, a...)
+	} else {
+		wErr = errors.New(format)
+	}
+	Err.Wrap(wErr)
+	return Err
+}
+
+//InternalError
+type InternalError struct{ E }
