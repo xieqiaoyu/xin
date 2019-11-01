@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"encoding/json"
+	"fmt"
 	"github.com/xieqiaoyu/xin"
 	xlog "github.com/xieqiaoyu/xin/log"
 	xjsonschema "github.com/xieqiaoyu/xin/util/jsonschema"
@@ -36,7 +37,7 @@ func VerifyConfigBySchema(schema string) {
 }
 
 //InitConfig 初始化配置文件逻辑,如果读取配置文件失败会报错,这个函数需要手动调用，因为不是所有的命令都需要一个配置文件
-func InitConfig() {
+func InitConfig() error {
 	viper := xin.Config()
 	// TODO: rewrite in build
 	viper.SetConfigType("toml")
@@ -47,27 +48,24 @@ func InitConfig() {
 	}
 	err := viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
-		xlog.WriteError("Fatal error load config file: %s", err)
-		os.Exit(2)
+		return fmt.Errorf("Fatal error load config file: %w", err)
 	}
 	// 验证配置文件的内容是否正确
 	if verifyConfig {
 		config := make(map[string]interface{})
 		err = viper.Unmarshal(&config)
 		if err != nil {
-			xlog.WriteError("Unmarshal config fail:%s", err)
-			os.Exit(2)
+			return fmt.Errorf("Unmarshal config fail:: %w", err)
 		}
 		configString, err := json.Marshal(config)
 		if err != nil {
-			xlog.WriteError("Marshal config fail:%s", err)
-			os.Exit(2)
+			return fmt.Errorf("Marshal config fail:%w", err)
 		}
 		if pass, err := xjsonschema.ValidJSONString(string(configString), configSchema); !pass {
-			xlog.WriteError("Unsatisfy config :%s", err)
-			os.Exit(2)
+			return fmt.Errorf("Unsatisfy config :%w", err)
 		}
 	}
+	return nil
 }
 
 // Execute Execute

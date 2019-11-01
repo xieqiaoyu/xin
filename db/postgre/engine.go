@@ -59,6 +59,14 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 	return dbInstance.(*xorm.Engine), nil
 }
 
+//GetOrLoad load engine by id if giving engine is nil
+func GetOrLoad(id string, engine *xorm.Engine) (*xorm.Engine, error) {
+	if engine != nil {
+		return engine, nil
+	}
+	return Engine(id)
+}
+
 //Close Close
 func Close() {
 	dbInstances.Range(func(id, dbInstance interface{}) bool {

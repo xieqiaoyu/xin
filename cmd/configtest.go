@@ -13,8 +13,11 @@ func ConfigTestCmd() *cobra.Command {
 		Short: "config check",
 		Long:  `check config file is ok`,
 		Run: func(cmd *cobra.Command, args []string) {
-			InitConfig()
-			fmt.Println("config check pass!")
+			if err := InitConfig(); err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("config check pass!")
+			}
 		},
 	}
 }

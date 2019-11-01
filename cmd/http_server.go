@@ -27,7 +27,10 @@ func HttpServerCmd() *cobra.Command {
 		Short: "http server",
 		Long:  `control http server behavior`,
 		Run: func(cmd *cobra.Command, args []string) {
-			InitConfig()
+			if err := InitConfig(); err != nil {
+				xlog.WriteError("%s", err)
+				os.Exit(1)
+			}
 			r := httpserver.Engine(registRouterFunc)
 			srv := &http.Server{
 				Addr:    xin.Config().GetString("http.listen"),
