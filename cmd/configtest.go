@@ -15,7 +15,7 @@ func ConfigTestCmd() *cobra.Command {
 		Long:  `check config file is ok`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if ConfigFileToUse != "" {
-				xin.SetConfigFile(ConfigFileToUse)
+				xin.SetConfigFile(ConfigFileToUse, "toml")
 			}
 			if err := xin.LoadConfig(); err != nil {
 				fmt.Println(err)

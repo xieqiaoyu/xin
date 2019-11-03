@@ -28,7 +28,7 @@ func HttpServerCmd() *cobra.Command {
 		Long:  `control http server behavior`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if ConfigFileToUse != "" {
-				xin.SetConfigFile(ConfigFileToUse)
+				xin.SetConfigFile(ConfigFileToUse, "toml")
 			}
 			if err := xin.LoadConfig(); err != nil {
 				xlog.WriteError("%s", err)
