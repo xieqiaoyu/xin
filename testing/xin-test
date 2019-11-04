@@ -1,0 +1,26 @@
+#! /usr/bin/env bash
+set -eu
+
+testBin="pkg.test"
+projectBase=$(git rev-parse --show-toplevel)
+
+if [ -e "$projectBase/test_base.sh" ]; then
+  source "$projectBase/test_base.sh"
+fi
+
+echo "building.."
+GOOS=linux go test -c -o "${testBin}" || exit
+
+echo "run test.."
+
+set +e
+
+docker run -it --rm --name=xintest --network="$netWorkName" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "${PWD}/pkg.test:/lab/bin" \
+    -w "/lab" \
+    golang:1.13 ./bin -test.v $@
+
+if [ -e "$testBin" ]; then
+    rm "$testBin"
+fi
