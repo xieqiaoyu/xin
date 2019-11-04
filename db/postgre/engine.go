@@ -59,12 +59,23 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 	return dbInstance.(*xorm.Engine), nil
 }
 
-//GetOrLoad load engine by id if giving engine is nil
-func GetOrLoad(id string, engine *xorm.Engine) (*xorm.Engine, error) {
-	if engine != nil {
-		return engine, nil
+//GetOrLoad load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
+func Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
+	if dbInf == nil {
+		engine, err := Engine(id)
+		if err != nil {
+			return nil, false, err
+		}
+		return engine.NewSession(), true, nil
 	}
-	return Engine(id)
+	switch i := dbInf.(type) {
+	case *xorm.Engine:
+		return i.NewSession(), true, nil
+	case *xorm.Session:
+		return i, false, nil
+	}
+	return nil, false, xin.WrapE(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
+
 }
 
 //Close Close
