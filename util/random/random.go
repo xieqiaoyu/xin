@@ -11,9 +11,13 @@ const (
 	numberRunes   = "0123456789"
 	numberIdxBits = 4
 	numberIdxMask = 1<<numberIdxBits - 1
+
+	letterRunes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+	letterIdxBits = 6
+	letterIdxMask = 1<<letterIdxBits - 1
 )
 
-//RandomNumString 返回一个指定长度的数字字符串
+//RandomNumString generate random string with number letters
 func RandomNumString(length int) string {
 	if length <= 0 {
 		return ""
@@ -33,6 +37,32 @@ func RandomNumString(length int) string {
 			writeLen++
 		}
 		dice >>= numberIdxBits
+	}
+	return sb.String()
+}
+
+//RandomString generate random string with letters and "_-"
+func RandomString(length int) string {
+	if length <= 0 {
+		return ""
+	}
+	sb := strings.Builder{}
+	sb.Grow(length)
+	var dice int64
+	writeLen := 0
+	rand.Seed(time.Now().UnixNano())
+
+	leftLen := 0
+	for writeLen < length {
+		if leftLen < letterIdxBits {
+			dice = rand.Int63()
+			leftLen = 64
+		}
+		idx := int(dice & letterIdxMask)
+		sb.WriteByte(letterRunes[idx])
+		writeLen++
+		dice >>= letterIdxBits
+		leftLen -= letterIdxBits
 	}
 	return sb.String()
 }
