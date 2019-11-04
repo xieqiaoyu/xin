@@ -36,11 +36,11 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 	dbSource := conf.GetString(connectionSourceKey)
 
 	if dbSource == "" {
-		return nil, xin.WrapE(&xin.InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
+		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
 	}
 	dbInstanceTemp, err := xorm.NewEngine("postgres", dbSource)
 	if err != nil {
-		return nil, xin.WrapE(&xin.InternalError{}, "Fail to connect database use source string %s, Err:%w", dbSource, err)
+		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to connect database use source string %s, Err:%w", dbSource, err)
 
 	}
 
@@ -74,7 +74,7 @@ func Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool
 	case *xorm.Session:
 		return i, false, nil
 	}
-	return nil, false, xin.WrapE(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
+	return nil, false, xin.WrapEf(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
 
 }
 
