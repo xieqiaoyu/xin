@@ -84,6 +84,11 @@ func XinRESTfulWrapper(c *gin.Context) {
 	}
 	// 根据返回的apiStatus 获取http 的status
 	httpStatus := int(baseResponseObj.Status % 1000)
+	//TODO: 需要一个更加合理的方式进行有效性的判断
+	if httpStatus < 100 || httpStatus >= 600 {
+		xlog.WriteWarning("malformed api status %d", baseResponseObj.Status)
+		httpStatus = 500
+	}
 
 	if errExists {
 		var errMsgString string
@@ -96,7 +101,7 @@ func XinRESTfulWrapper(c *gin.Context) {
 			var internalErr *xin.InternalError
 			isInternalError = errors.As(t, &internalErr)
 		default:
-			xlog.WriteWarning("Unexpected ErrMsg type %T\n", t)
+			xlog.WriteWarning("Unexpected ErrMsg type %T", t)
 		}
 		//http 状态码 > 500 在正式环境应该屏蔽错误输出并将错误输入到日志中
 		if (httpStatus >= 500 || isInternalError) && (xin.Mode() == xin.Release) {
