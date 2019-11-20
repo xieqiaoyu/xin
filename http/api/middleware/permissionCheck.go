@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/xieqiaoyu/xin/http/api"
 )
@@ -19,7 +20,10 @@ func PermissionCheck(permission interface{}, checkpoints ...CheckPermitFunc) gin
 			pass, user, err := check(copyC, permission)
 			if !pass {
 				// 设置http 403 错误
-				api.SetError(c, err, 403)
+				if err == nil {
+					err = errors.New("Access Deny")
+				}
+				api.SetStatus(403).SetError(err).Apply(c)
 				c.Abort()
 				return
 			}

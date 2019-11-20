@@ -41,8 +41,79 @@ func CheckReqJSON(c *gin.Context, schemaStr string, obj interface{}) (bool, erro
 	err := ValidateRequestBodyJSON(c, schemaStr, obj)
 	if err != nil {
 		//TODO:目前认为context 直接在这个地方abort 不太好，这样函数就被限制得太死了
-		SetError(c, fmt.Errorf("Check JSON err: %w", err))
+		SetErrorf("Check JSON err: %w", err).Apply(c)
 		return false, err
 	}
 	return true, nil
+}
+
+func SetStatus(code int) *ApiContext {
+	return &ApiContext{
+		Status: &code,
+	}
+}
+
+func SetData(data interface{}) *ApiContext {
+	return &ApiContext{
+		Data: data,
+	}
+}
+
+func SetError(err error) *ApiContext {
+	return &ApiContext{
+		Err: err,
+	}
+}
+
+func SetErrorf(format string, a ...interface{}) *ApiContext {
+	var err error
+	if len(a) > 0 {
+		err = fmt.Errorf(format, a...)
+	} else {
+		err = errors.New(format)
+	}
+	return SetError(err)
+}
+
+type ApiContext struct {
+	Status *int
+	Data   interface{}
+	Err    error
+}
+
+func (ac *ApiContext) Apply(c *gin.Context) {
+	if ac.Status != nil {
+		c.Set(StatusKey, *ac.Status)
+	}
+	if ac.Data != nil {
+		c.Set(DataKey, ac.Data)
+	}
+	if ac.Err != nil {
+		c.Set(ErrKey, ac.Err)
+	}
+}
+
+func (ac *ApiContext) SetStatus(code int) *ApiContext {
+	ac.Status = &code
+	return ac
+}
+
+func (ac *ApiContext) SetData(data interface{}) *ApiContext {
+	ac.Data = data
+	return ac
+}
+
+func (ac *ApiContext) SetError(err error) *ApiContext {
+	ac.Err = err
+	return ac
+}
+
+func (ac *ApiContext) SetErrorf(format string, a ...interface{}) *ApiContext {
+	var err error
+	if len(a) > 0 {
+		err = fmt.Errorf(format, a...)
+	} else {
+		err = errors.New(format)
+	}
+	return ac.SetError(err)
 }
