@@ -17,7 +17,6 @@ var (
 
 func stringToSchema(str string) (*gojsonschema.Schema, error) {
 	// 用schema 字符串的sha1 散列作为缓存的索引
-	// 必须先把值赋给一个变量才能将[]byte 转换为字符串
 	schemaHashBytes := sha1.Sum([]byte(str))
 	schema, cached := cache.Load(schemaHashBytes)
 	if !cached {
