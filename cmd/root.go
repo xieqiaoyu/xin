@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/xieqiaoyu/xin"
 	xlog "github.com/xieqiaoyu/xin/log"
 )
 
@@ -31,4 +32,11 @@ func Execute() {
 		xlog.WriteError(err.Error())
 		os.Exit(1)
 	}
+}
+
+func ConfigInit() error {
+	if ConfigFileToUse != "" {
+		xin.SetConfigFile(ConfigFileToUse, "toml")
+	}
+	return xin.LoadConfig()
 }

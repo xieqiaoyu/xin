@@ -27,18 +27,17 @@ func HttpServerCmd() *cobra.Command {
 		Short: "http server",
 		Long:  `control http server behavior`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if ConfigFileToUse != "" {
-				xin.SetConfigFile(ConfigFileToUse, "toml")
-			}
-			if err := xin.LoadConfig(); err != nil {
+			if err := ConfigInit(); err != nil {
 				xlog.WriteError("%s", err)
 				os.Exit(1)
 			}
 			r := httpserver.Engine(registRouterFunc)
+			addr := xin.Config().GetString("http.listen")
 			srv := &http.Server{
-				Addr:    xin.Config().GetString("http.listen"),
+				Addr:    addr,
 				Handler: r,
 			}
+			xlog.WriteInfo("Http server working on %s", addr)
 			go func() {
 				if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 					xlog.WriteError("Ooops! %s", err)
@@ -54,7 +53,7 @@ func HttpServerCmd() *cobra.Command {
 				xlog.WriteError("Server Shutdown: %s", err)
 				os.Exit(1)
 			}
-			xlog.WriteInfo("Server exiting")
+			xlog.WriteInfo("Server exited")
 		},
 	}
 }

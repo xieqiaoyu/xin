@@ -13,6 +13,8 @@ require (
 	github.com/spf13/viper v1.5.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.etcd.io/etcd v3.3.17+incompatible
+	google.golang.org/grpc v1.21.0
+	sigs.k8s.io/yaml v1.1.0 // indirect
 	xorm.io/core v0.7.2
 	xorm.io/xorm v0.8.0
 )
