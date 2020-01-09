@@ -18,11 +18,7 @@ func init() {
 }
 
 //Engine 获取redis 连接对象
-func Engine(ids ...string) (radix.Client, error) {
-	id := "default"
-	if len(ids) > 0 {
-		id = ids[0]
-	}
+func Engine(id string) (radix.Client, error) {
 	instance, exists := instances.Load(id)
 	if exists {
 		return instance.(radix.Client), nil
