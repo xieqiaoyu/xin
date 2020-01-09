@@ -48,6 +48,9 @@ func GrpcServerCmd() *cobra.Command {
 				reflection.Register(s)
 			}
 			addr := xin.Config().GetString("grpc.listen")
+			if addr == "" {
+				addr = ":50051"
+			}
 			lis, err := net.Listen("tcp", addr)
 			if err != nil {
 				xlog.WriteError("failed to listen: %v", err)

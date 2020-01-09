@@ -33,6 +33,9 @@ func HttpServerCmd() *cobra.Command {
 			}
 			r := httpserver.Engine(registRouterFunc)
 			addr := xin.Config().GetString("http.listen")
+			if addr == "" {
+				addr = ":8080"
+			}
 			srv := &http.Server{
 				Addr:    addr,
 				Handler: r,
