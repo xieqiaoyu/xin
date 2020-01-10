@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,7 +11,6 @@ import (
 	xgrpc "github.com/xieqiaoyu/xin/grpc"
 	xlog "github.com/xieqiaoyu/xin/log"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 var grpcServerRegister xgrpc.RegistServerFunc
@@ -38,25 +36,22 @@ func Cmd() *cobra.Command {
 				xlog.WriteError("%s", err)
 				os.Exit(1)
 			}
-			s := grpc.NewServer(grpcServerOpts...)
+
+			s := xgrpc.Server(grpcServerOpts...)
+
 			if grpcServerRegister != nil {
 				grpcServerRegister(s)
 			}
-			// if in development we enable grpc reflection
-			if xin.Mode() == xin.Dev {
-				reflection.Register(s)
-			}
-			addr := xgrpc.Addr()
-			lis, err := net.Listen("tcp", addr)
-			if err != nil {
-				xlog.WriteError("failed to listen: %v", err)
-				os.Exit(1)
+			addr := xin.Config().GetString("grpc.listen")
+			if addr == "" {
+				addr = ":50051"
 			}
 
-			xlog.WriteInfo("Grpc server working on %s", addr)
 			go func() {
-				if err := s.Serve(lis); err != nil {
-					xlog.WriteError("failed to serve: %v", err)
+				xlog.WriteInfo("Grpc server working on %s", addr)
+				err := xgrpc.ServeTCP(s, addr)
+				if err != nil {
+					xlog.WriteError("%s", err)
 					os.Exit(1)
 				}
 			}()
