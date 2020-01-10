@@ -19,16 +19,16 @@ var grpcServerRegister xgrpc.RegistServerFunc
 var grpcServerOpts []grpc.ServerOption
 
 //UseGRPCServerRegister UseGRPCServerRegister
-func UseGRPCServerRegister(register xgrpc.RegistServerFunc) {
+func UseServerRegister(register xgrpc.RegistServerFunc) {
 	grpcServerRegister = register
 }
 
 //SetGRPCServerOpts SetGRPCServerOpts
-func SetGRPCServerOpts(opts []grpc.ServerOption) {
+func SetServerOpts(opts []grpc.ServerOption) {
 	grpcServerOpts = opts
 }
 
-func GrpcServerCmd() *cobra.Command {
+func Cmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "grpc",
 		Short: "start grpc service",

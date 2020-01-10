@@ -17,8 +17,8 @@ func UseRouterRegister(handle xhttp.RegisterRouterAndMiddlewareFunc) {
 	registerRouterAndMiddare = handle
 }
 
-//ServerCmd 启动服务器的命令
-func HttpServerCmd() *cobra.Command {
+//Cmd 启动服务器的命令
+func Cmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "http",
 		Short: "http server",
