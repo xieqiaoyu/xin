@@ -8,19 +8,18 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/xieqiaoyu/xin"
+	xcmd "github.com/xieqiaoyu/xin/cmd"
+	xgrpc "github.com/xieqiaoyu/xin/grpc"
 	xlog "github.com/xieqiaoyu/xin/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-var grpcServerRegister RegistGRPCServerFunc
+var grpcServerRegister xgrpc.RegistServerFunc
 var grpcServerOpts []grpc.ServerOption
 
-//RegistGRPCServerFunc RegistGRPCServerFunc
-type RegistGRPCServerFunc func(*grpc.Server)
-
 //UseGRPCServerRegister UseGRPCServerRegister
-func UseGRPCServerRegister(register RegistGRPCServerFunc) {
+func UseGRPCServerRegister(register xgrpc.RegistServerFunc) {
 	grpcServerRegister = register
 }
 
@@ -35,7 +34,7 @@ func GrpcServerCmd() *cobra.Command {
 		Short: "start grpc service",
 		Long:  `control grpc server behavior`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := ConfigInit(); err != nil {
+			if err := xcmd.ConfigInit(); err != nil {
 				xlog.WriteError("%s", err)
 				os.Exit(1)
 			}
@@ -47,10 +46,7 @@ func GrpcServerCmd() *cobra.Command {
 			if xin.Mode() == xin.Dev {
 				reflection.Register(s)
 			}
-			addr := xin.Config().GetString("grpc.listen")
-			if addr == "" {
-				addr = ":50051"
-			}
+			addr := xgrpc.Addr()
 			lis, err := net.Listen("tcp", addr)
 			if err != nil {
 				xlog.WriteError("failed to listen: %v", err)

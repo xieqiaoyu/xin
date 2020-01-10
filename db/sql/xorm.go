@@ -66,7 +66,7 @@ func XormSession(id string, dbInf xorm.Interface) (session *xorm.Session, isNew 
 //XormPqStringArray postgres array type support for xorm
 type XormPqStringArray []string
 
-func (a *StringArray) FromDB(bts []byte) error {
+func (a *XormPqStringArray) FromDB(bts []byte) error {
 	pqArray := new(pq.StringArray)
 	err := pqArray.Scan(bts)
 	if err != nil {
