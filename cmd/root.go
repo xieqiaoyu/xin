@@ -13,6 +13,7 @@ var (
 		Use: "anonymous",
 	}
 	ConfigFileToUse string
+	ConfigType      = "toml"
 )
 
 func init() {
@@ -36,7 +37,7 @@ func Execute() {
 
 func ConfigInit() error {
 	if ConfigFileToUse != "" {
-		xin.SetConfigFile(ConfigFileToUse, "toml")
+		xin.SetConfigFile(ConfigFileToUse, ConfigType)
 	}
 	return xin.LoadConfig()
 }

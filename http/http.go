@@ -30,18 +30,8 @@ func Engine() *gin.Engine {
 	return httpEngine
 }
 
-//Addr get server listen addr
-func Addr() string {
-	addr := xin.Config().GetString("http.listen")
-	if addr == "" {
-		addr = ":8080"
-	}
-	return addr
-}
-
-//GracefulStart gradeful start http server
-func GracefulStart(r *gin.Engine) {
-	addr := Addr()
+//ListenAndServe gradeful start http server
+func ListenAndServe(r *gin.Engine, addr string) {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: r,

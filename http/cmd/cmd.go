@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/xieqiaoyu/xin"
 	xcmd "github.com/xieqiaoyu/xin/cmd"
 	xhttp "github.com/xieqiaoyu/xin/http"
 	xlog "github.com/xieqiaoyu/xin/log"
@@ -27,10 +28,13 @@ func HttpServerCmd() *cobra.Command {
 				xlog.WriteError("%s", err)
 				os.Exit(1)
 			}
-
+			addr := xin.Config().GetString("http.listen")
+			if addr == "" {
+				addr = ":8080"
+			}
 			r := xhttp.Engine()
 			registerRouterAndMiddare(r)
-			xhttp.GracefulStart(r)
+			xhttp.ListenAndServe(r, addr)
 		},
 	}
 }
