@@ -15,6 +15,7 @@ import (
 
 var grpcServerRegister xgrpc.RegistServerFunc
 var grpcServerOpts []grpc.ServerOption
+var runAfterLoadConfig func() error
 
 //UseGRPCServerRegister UseGRPCServerRegister
 func UseServerRegister(register xgrpc.RegistServerFunc) {
@@ -26,6 +27,11 @@ func SetServerOpts(opts []grpc.ServerOption) {
 	grpcServerOpts = opts
 }
 
+//SetRunAfterLoadConfigHook Set hook for cmd to run after load config
+func SetRunAfterLoadConfigHook(f func() error) {
+	runAfterLoadConfig = f
+}
+
 func Cmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "grpc",
@@ -35,6 +41,14 @@ func Cmd() *cobra.Command {
 			if err := xcmd.ConfigInit(); err != nil {
 				xlog.WriteError("%s", err)
 				os.Exit(1)
+			}
+
+			if runAfterLoadConfig != nil {
+				err := runAfterLoadConfig()
+				if err != nil {
+					xlog.WriteError("%s", err)
+					os.Exit(1)
+				}
 			}
 
 			s := xgrpc.Server(grpcServerOpts...)
