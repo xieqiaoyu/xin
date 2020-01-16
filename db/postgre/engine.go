@@ -13,12 +13,12 @@ import (
 const logEnableKey = "database_enable_log"
 const configSourceKey = "database_connections"
 
-type EngineService struct {
+type Service struct {
 	instances *sync.Map
 	config    *xin.Config
 }
 
-func NewEngineService(config *xin.Config) *Service {
+func NewService(config *xin.Config) *Service {
 	return &Service{
 		instances: new(sync.Map),
 		config:    config,
@@ -60,21 +60,11 @@ func (s *Service) Engine(id string) (*xorm.Engine, error) {
 	return dbInstance.(*xorm.Engine), nil
 }
 
-//GetOrLoad load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
-func (s *Service) Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
-	if dbInf == nil {
-		engine, err := s.Engine(id)
-		if err != nil {
-			return nil, false, err
-		}
-		return engine.NewSession(), true, nil
+func (s *Service) Session(id string) (session *xorm.Session, err error) {
+	engine, err := s.Engine(id)
+	if err != nil {
+		return nil, err
 	}
-	switch i := dbInf.(type) {
-	case *xorm.Engine:
-		return i.NewSession(), true, nil
-	case *xorm.Session:
-		return i, false, nil
-	}
-	return nil, false, xin.WrapEf(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
+	return engine.NewSession(), nil
 
 }

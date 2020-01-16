@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"github.com/gin-gonic/gin"
+	"github.com/xieqiaoyu/xin"
 	"github.com/xieqiaoyu/xin/http/api"
 	xlog "github.com/xieqiaoyu/xin/log"
 	xsession "github.com/xieqiaoyu/xin/session"
@@ -62,5 +63,31 @@ func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 				}
 			}
 		}
+	}
+}
+
+//SessionAuth Get A Session User auth middleware
+func SessionUserAuth(userKey string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionStruct, exists := c.Get(api.SessionKey)
+		if exists && sessionStruct != nil {
+			session, ok := sessionStruct.(xsession.Session)
+			if !ok {
+				c.Set(api.StatusKey, 500)
+				c.Set(api.ErrKey, xin.NewWrapEf("malformed session %T is not a Session interface", sessionStruct))
+				c.Abort()
+				return
+			}
+			// 按login
+			user, exists := session.Get(userKey)
+			if exists && user != nil {
+				c.Set(api.UserKey, user)
+				return
+			}
+		}
+		c.Set(api.StatusKey, 401)
+		c.Set(api.ErrKey, "Unauthorize Access")
+		c.Abort()
+		return
 	}
 }

@@ -15,15 +15,24 @@ type Server interface {
 	GetHttpServer() *http.Server
 }
 
+type InitializeServerFunc func(config *xin.Config) (Server, error)
+
 //NewHttpCmd Get a cobra command start http server
-func NewHttpCmd(config *xin.Config, server Server) *cobra.Command {
+func NewHttpCmd(config *xin.Config, initServer InitializeServerFunc) *cobra.Command {
 	return &cobra.Command{
 		Use:   "http",
 		Short: "http server",
 		Long:  `control http server behavior`,
-		Run: func(cmd *cobra.Command, args []string) {
+		PreRun: func(cmd *cobra.Command, args []string) {
 			if err := config.Init(); err != nil {
 				xlog.WriteError("%s", err)
+				os.Exit(1)
+			}
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			server, err := initServer(config)
+			if err != nil {
+				xlog.WriteError("Init server fail %s", err)
 				os.Exit(1)
 			}
 			httpServer := server.GetHttpServer()
