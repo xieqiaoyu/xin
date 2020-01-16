@@ -9,12 +9,16 @@ import (
 const configSourceKey = "sql_connections.%s.source"
 const configDriverKey = "sql_connections.%s.driver"
 
-var (
-	dbInstances *sync.Map
-)
+type Service struct {
+	instances *sync.Map
+	config    *xin.Config
+}
 
-func init() {
-	dbInstances = new(sync.Map)
+func NewService(config *xin.Config) *Service {
+	return &Service{
+		instances: new(sync.Map),
+		config:    config,
+	}
 }
 
 //GenEngineFunc  function to generate an engine
@@ -24,16 +28,16 @@ type GenEngineFunc func(driverName, dataSourceName string) (engine interface{}, 
 type CloseEngineFunc func(engine interface{}) error
 
 // Engine  get connect engine
-func Engine(id string, genHandle GenEngineFunc, closeHandle CloseEngineFunc) (interface{}, error) {
+func (s *Service) Engine(id string, genHandle GenEngineFunc, closeHandle CloseEngineFunc) (interface{}, error) {
 	if genHandle == nil {
 		return nil, xin.NewWrapEf("genHandle can not be nil")
 	}
-	dbInstance, exists := dbInstances.Load(id)
+	dbInstance, exists := s.instances.Load(id)
 	if exists {
 		return dbInstance, nil
 	}
 
-	conf := xin.Config()
+	conf := s.config.Viper()
 	connectionDriverKey := fmt.Sprintf(configDriverKey, id)
 
 	sqlDriver := conf.GetString(connectionDriverKey)
@@ -52,7 +56,7 @@ func Engine(id string, genHandle GenEngineFunc, closeHandle CloseEngineFunc) (in
 
 	}
 
-	dbInstance, loaded := dbInstances.LoadOrStore(id, dbInstanceTemp)
+	dbInstance, loaded := s.instances.LoadOrStore(id, dbInstanceTemp)
 	if loaded {
 		// another routine has already opened the connection, just close ours
 		if closeHandle != nil {

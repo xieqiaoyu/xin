@@ -8,14 +8,14 @@ import (
 
 const logEnableKey = "sql_enable_log"
 
-func newXormEngine(driverName, dataSourceName string) (engine interface{}, err error) {
+func (s *Service) newXormEngine(driverName, dataSourceName string) (engine interface{}, err error) {
 	e, err := xorm.NewEngine(driverName, dataSourceName)
 	if err != nil {
 		return nil, xin.NewWrapEf("Fail to new xorm database engine driver [%s] source [%s], Err:%w", driverName, dataSourceName, err)
 
 	}
 
-	logEnable := xin.Config().GetBool(logEnableKey)
+	logEnable := s.config.Viper().GetBool(logEnableKey)
 	if logEnable {
 		e.ShowSQL(true)
 		//engine.Logger().SetLevel(core.LOG_DEBUG)
@@ -32,8 +32,8 @@ func closeXormEngine(engine interface{}) error {
 }
 
 //XormEngine load a
-func XormEngine(id string) (engine *xorm.Engine, err error) {
-	e, err := Engine(id, newXormEngine, closeXormEngine)
+func (s *Service) XormEngine(id string) (engine *xorm.Engine, err error) {
+	e, err := s.Engine(id, s.newXormEngine, closeXormEngine)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +45,9 @@ func XormEngine(id string) (engine *xorm.Engine, err error) {
 }
 
 //XormSession  load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
-func XormSession(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
+func (s *Service) XormSession(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
 	if dbInf == nil {
-		engine, err := XormEngine(id)
+		engine, err := s.XormEngine(id)
 		if err != nil {
 			return nil, false, err
 		}

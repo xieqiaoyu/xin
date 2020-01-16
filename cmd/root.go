@@ -8,36 +8,29 @@ import (
 	xlog "github.com/xieqiaoyu/xin/log"
 )
 
-var (
-	rootCmd = &cobra.Command{
-		Use: "anonymous",
-	}
-	ConfigFileToUse string
-	ConfigType      = "toml"
-)
+type SubCmds []*cobra.Command
 
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&ConfigFileToUse, "config", "c", "", "specific config file")
+type RootCmd struct {
+	Command *cobra.Command
 }
 
-//RootCmd return root commend
-func RootCmd() *cobra.Command {
-	return rootCmd
-}
-
-// Execute Execute
-func Execute() {
-	rootCmd.AddCommand(versionCmd())
-	rootCmd.AddCommand(ConfigTestCmd())
-	if err := rootCmd.Execute(); err != nil {
+func (c *RootCmd) Execute() {
+	if err := c.Command.Execute(); err != nil {
 		xlog.WriteError(err.Error())
 		os.Exit(1)
 	}
 }
 
-func ConfigInit() error {
-	if ConfigFileToUse != "" {
-		xin.SetConfigFile(ConfigFileToUse, ConfigType)
+func NewRootCmd(subcmds SubCmds, fileConfigLoader *xin.FileConfigLoader) *RootCmd {
+	cobraCmd := &cobra.Command{
+		Use: "anonymous",
 	}
-	return xin.LoadConfig()
+	cobraCmd.PersistentFlags().StringVarP(&fileConfigLoader.FileName, "config", "c", "", "specific config file")
+	rootcmd := &RootCmd{
+		Command: cobraCmd,
+	}
+	for _, cmd := range subcmds {
+		cobraCmd.AddCommand(cmd)
+	}
+	return rootcmd
 }

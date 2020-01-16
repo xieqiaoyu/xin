@@ -13,25 +13,26 @@ import (
 const logEnableKey = "database_enable_log"
 const configSourceKey = "database_connections"
 
-var dbInstances *sync.Map
-
-func init() {
-	dbInstances = new(sync.Map)
+type EngineService struct {
+	instances *sync.Map
+	config    *xin.Config
 }
 
-// Engine  获取数据库连接对象
-func Engine(ids ...string) (*xorm.Engine, error) {
-	id := "default"
-	if len(ids) > 0 {
-		id = ids[0]
+func NewEngineService(config *xin.Config) *Service {
+	return &Service{
+		instances: new(sync.Map),
+		config:    config,
 	}
-	dbInstance, exists := dbInstances.Load(id)
+}
+
+func (s *Service) Engine(id string) (*xorm.Engine, error) {
+	dbInstance, exists := s.instances.Load(id)
 	if exists {
 		// 连接已经存在的情况，做一个断言直接返回即可
 		return dbInstance.(*xorm.Engine), nil
 	}
 
-	conf := xin.Config()
+	conf := s.config.Viper()
 	connectionSourceKey := fmt.Sprintf("%s.%s", configSourceKey, id)
 	dbSource := conf.GetString(connectionSourceKey)
 
@@ -50,7 +51,7 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 		//dbInstanceTemp.Logger().SetLevel(core.LOG_DEBUG)
 	}
 
-	dbInstance, loaded := dbInstances.LoadOrStore(id, dbInstanceTemp)
+	dbInstance, loaded := s.instances.LoadOrStore(id, dbInstanceTemp)
 	if loaded {
 		// 已经有其他线程打开了数据库连接，本次操作的连接可以关闭
 		dbInstanceTemp.Close()
@@ -60,9 +61,9 @@ func Engine(ids ...string) (*xorm.Engine, error) {
 }
 
 //GetOrLoad load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
-func Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
+func (s *Service) Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
 	if dbInf == nil {
-		engine, err := Engine(id)
+		engine, err := s.Engine(id)
 		if err != nil {
 			return nil, false, err
 		}
@@ -76,16 +77,4 @@ func Session(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool
 	}
 	return nil, false, xin.WrapEf(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
 
-}
-
-//Close Close
-func Close() {
-	dbInstances.Range(func(id, dbInstance interface{}) bool {
-		dbE := dbInstance.(*xorm.Engine)
-		err := dbE.Close()
-		if err != nil {
-			return false
-		}
-		return true
-	})
 }

@@ -47,98 +47,104 @@ func WrapAPI(wrappers Wrappers) gin.HandlerFunc {
 	}
 }
 
-// SimpleJSONWrapper 简单的JSON 返回
-func SimpleJSONWrapper(c *gin.Context) {
-	status := 200
-	apiStatus, statusExists := c.Get(api.StatusKey)
-	if statusExists {
-		status = apiStatus.(int)
+// SimpleJSONWrapper get a simple json wrapper middware
+func SimpleJSONWrapper() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		status := 200
+		apiStatus, statusExists := c.Get(api.StatusKey)
+		if statusExists {
+			status = apiStatus.(int)
+		}
+		dataStruct, dataExists := c.Get(api.DataKey)
+		if dataExists {
+			c.JSON(status, dataStruct)
+			return
+		}
+		c.String(status, "")
 	}
-	dataStruct, dataExists := c.Get(api.DataKey)
-	if dataExists {
-		c.JSON(status, dataStruct)
-		return
-	}
-	c.String(status, "")
 }
 
-//XinRESTfulResponse  restful respons 的返回结构
+//XinRESTfulResponse  restful response struct
 type XinRESTfulResponse struct {
 	Status int    `json:"status"`
 	ErrMsg string `json:"err_msg,omitempty"`
 }
 
-//XinRESTfulWrapper xin 框架定制的一种restful 包装逻辑
-func XinRESTfulWrapper(c *gin.Context) {
-	baseResponseObj := new(XinRESTfulResponse)
-	apiStatus, statusExists := c.Get(api.StatusKey)
-	errMsg, errExists := c.Get(api.ErrKey)
-	dataStruct, dataExists := c.Get(api.DataKey)
+//XinRESTfulWrapper get a xin restful wrapper middware
+// httpstatus = apiStatus%1000
+// For example if api status is set to 1404 then api http status will be set to 404
+func XinRESTfulWrapper(env xin.Envirment) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		baseResponseObj := new(XinRESTfulResponse)
+		apiStatus, statusExists := c.Get(api.StatusKey)
+		errMsg, errExists := c.Get(api.ErrKey)
+		dataStruct, dataExists := c.Get(api.DataKey)
 
-	if statusExists {
-		baseResponseObj.Status = apiStatus.(int)
-	} else if errExists {
-		baseResponseObj.Status = api.ErrorStatusDefault
-	} else {
-		baseResponseObj.Status = api.StatusDefault
-	}
-	// 根据返回的apiStatus 获取http 的status
-	httpStatus := int(baseResponseObj.Status % 1000)
-	//TODO: 需要一个更加合理的方式进行有效性的判断
-	if httpStatus < 100 || httpStatus >= 600 {
-		xlog.WriteWarning("malformed api status %d", baseResponseObj.Status)
-		httpStatus = 500
-	}
-
-	if errExists {
-		var errMsgString string
-		var isInternalError bool
-		switch t := errMsg.(type) {
-		case string:
-			errMsgString = t
-		case error:
-			errMsgString = t.Error()
-			var internalErr *xin.InternalError
-			isInternalError = errors.As(t, &internalErr)
-		default:
-			xlog.WriteWarning("Unexpected ErrMsg type %T", t)
-		}
-		//http 状态码 > 500 在正式环境应该屏蔽错误输出并将错误输入到日志中
-		if (httpStatus >= 500 || isInternalError) && (xin.Mode() == xin.Release) {
-			//TODO: 更加详细的记录包括请求header 和 body
-			xlog.WriteError("%s return status %d with error message:%s", c.Request.URL.Path, httpStatus, errMsgString)
+		if statusExists {
+			baseResponseObj.Status = apiStatus.(int)
+		} else if errExists {
+			baseResponseObj.Status = api.ErrorStatusDefault
 		} else {
-			baseResponseObj.ErrMsg = errMsgString
+			baseResponseObj.Status = api.StatusDefault
 		}
-	}
+		// 根据返回的apiStatus 获取http 的status
+		httpStatus := int(baseResponseObj.Status % 1000)
+		//TODO: 需要一个更加合理的方式进行有效性的判断
+		if httpStatus < 100 || httpStatus >= 600 {
+			xlog.WriteWarning("malformed api status %d", baseResponseObj.Status)
+			httpStatus = 500
+		}
 
-	if dataExists {
-		//将data 数据合并到baseResponseObj 中
-		var responseMap map[string]interface{}
-		var baseResponseMap map[string]interface{}
-
-		// NOTE(xieqiaoyu) 目前不认为下面的json 解析会出错误，暂时不做错误处理
-		dataStructJSON, _ := json.Marshal(dataStruct)
-		json.Unmarshal(dataStructJSON, &responseMap)
-		baseResponseJSON, _ := json.Marshal(baseResponseObj)
-		json.Unmarshal(baseResponseJSON, &baseResponseMap)
-		// 合并两个map
-		// 这种写法在处理上会快一些
-		for key, value := range baseResponseMap {
-			// baseResponse 不覆盖应用层的定义
-			if _, exists := responseMap[key]; !exists {
-				responseMap[key] = value
+		if errExists {
+			var errMsgString string
+			var isInternalError bool
+			switch t := errMsg.(type) {
+			case string:
+				errMsgString = t
+			case error:
+				errMsgString = t.Error()
+				var internalErr *xin.InternalError
+				isInternalError = errors.As(t, &internalErr)
+			default:
+				xlog.WriteWarning("Unexpected ErrMsg type %T", t)
+			}
+			//http 状态码 > 500 在正式环境应该屏蔽错误输出并将错误输入到日志中
+			if (httpStatus >= 500 || isInternalError) && (env.Mode() == xin.ReleaseMode) {
+				//TODO: 更加详细的记录包括请求header 和 body
+				xlog.WriteError("%s return status %d with error message:%s", c.Request.URL.Path, httpStatus, errMsgString)
+			} else {
+				baseResponseObj.ErrMsg = errMsgString
 			}
 		}
-		c.JSON(httpStatus, responseMap)
-	} else {
-		c.JSON(httpStatus, baseResponseObj)
+
+		if dataExists {
+			//将data 数据合并到baseResponseObj 中
+			var responseMap map[string]interface{}
+			var baseResponseMap map[string]interface{}
+
+			// NOTE(xieqiaoyu) 目前不认为下面的json 解析会出错误，暂时不做错误处理
+			dataStructJSON, _ := json.Marshal(dataStruct)
+			json.Unmarshal(dataStructJSON, &responseMap)
+			baseResponseJSON, _ := json.Marshal(baseResponseObj)
+			json.Unmarshal(baseResponseJSON, &baseResponseMap)
+			// 合并两个map
+			// 这种写法在处理上会快一些
+			for key, value := range baseResponseMap {
+				// baseResponse 不覆盖应用层的定义
+				if _, exists := responseMap[key]; !exists {
+					responseMap[key] = value
+				}
+			}
+			c.JSON(httpStatus, responseMap)
+		} else {
+			c.JSON(httpStatus, baseResponseObj)
+		}
 	}
 }
 
 // NewWrappers 创建一个带有default 的wrappers
 func NewWrappers() Wrappers {
 	return Wrappers{
-		WrapperDefaultKey: SimpleJSONWrapper,
+		WrapperDefaultKey: SimpleJSONWrapper(),
 	}
 }

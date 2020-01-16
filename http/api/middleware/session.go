@@ -25,11 +25,11 @@ func generateSessionID() string {
 			GenerateRandomKey(32)), "=")
 }
 
-func Session(name string, handle xsession.Handle) gin.HandlerFunc {
+func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionID, _ := c.Cookie(name)
 		if sessionID != "" {
-			session, exists, err := handle.Load(sessionID)
+			session, exists, err := handler.Load(sessionID)
 			if err == nil && exists {
 				c.Set(api.SessionKey, session)
 			} else {
@@ -50,7 +50,7 @@ func Session(name string, handle xsession.Handle) gin.HandlerFunc {
 					if sessionID == "" {
 						sessionID = generateSessionID()
 					}
-					ttl, err := handle.Save(sessionID, newSession)
+					ttl, err := handler.Save(sessionID, newSession)
 					if err != nil {
 						xlog.WriteError("Save session err:%s", err)
 					} else {

@@ -1,10 +1,9 @@
-package handle
+package handler
 
 import (
 	"bytes"
 	"encoding/gob"
 	"github.com/mediocregopher/radix/v3"
-	"github.com/xieqiaoyu/xin/db/redis"
 	xsession "github.com/xieqiaoyu/xin/session"
 )
 
@@ -33,8 +32,8 @@ func DefaultSessionUnmarshal(raw []byte) (session xsession.Session, err error) {
 	return session, nil
 }
 
-//NewRedisHandle NewRedisHandle
-func NewRedisHandle(ttl int, connectID string, marshal SessionMarshalFunc, unmarshal SessionUnmarshalFunc) *Redis {
+//NewRedisHandler NewRedisHandler
+func NewRedisHandler(store radix.Client, ttl int, marshal SessionMarshalFunc, unmarshal SessionUnmarshalFunc) *Redis {
 	if marshal == nil {
 		marshal = DefaultSessionMarshal
 	}
@@ -43,28 +42,24 @@ func NewRedisHandle(ttl int, connectID string, marshal SessionMarshalFunc, unmar
 	}
 	return &Redis{
 		TTL:       ttl,
-		ConnectID: connectID,
 		Marshal:   marshal,
 		Unmarshal: unmarshal,
+		store:     store,
 	}
 }
 
 //Redis  redis session 控制类
 type Redis struct {
 	TTL       int
-	ConnectID string
 	Marshal   SessionMarshalFunc
 	Unmarshal SessionUnmarshalFunc
+	store     radix.Client
 }
 
 //Load Load
 func (s *Redis) Load(sessionID string) (xsession.Session, bool, error) {
-	store, err := redis.Engine(s.ConnectID)
-	if err != nil {
-		return nil, false, err
-	}
 	var raw []byte
-	err = store.Do(radix.Cmd(&raw, "GET", sessionID))
+	err := s.store.Do(radix.Cmd(&raw, "GET", sessionID))
 	if err != nil {
 		return nil, false, err
 	}
@@ -80,10 +75,6 @@ func (s *Redis) Load(sessionID string) (xsession.Session, bool, error) {
 
 //Save Save
 func (s *Redis) Save(sessionID string, session xsession.Session) (ttl int, err error) {
-	store, err := redis.Engine(s.ConnectID)
-	if err != nil {
-		return 0, err
-	}
 	ttl = session.GetTTL()
 	if ttl == 0 {
 		ttl = s.TTL
@@ -91,7 +82,7 @@ func (s *Redis) Save(sessionID string, session xsession.Session) (ttl int, err e
 	sc, ok := session.(xsession.SessionContent)
 	if ok && !sc.HasNewContent() {
 		// 没有新的内容只做session 的刷新，不创建新内容
-		err = store.Do(radix.FlatCmd(nil, "EXPIRE", sessionID, ttl))
+		err = s.store.Do(radix.FlatCmd(nil, "EXPIRE", sessionID, ttl))
 		if err != nil {
 			return 0, err
 		}
@@ -100,7 +91,7 @@ func (s *Redis) Save(sessionID string, session xsession.Session) (ttl int, err e
 		if err != nil {
 			return 0, err
 		}
-		err = store.Do(radix.FlatCmd(nil, "SETEX", sessionID, ttl, sBytes))
+		err = s.store.Do(radix.FlatCmd(nil, "SETEX", sessionID, ttl, sBytes))
 		if err != nil {
 			return 0, err
 		}

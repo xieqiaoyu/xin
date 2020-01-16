@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	xjsonschema "github.com/xieqiaoyu/xin/util/jsonschema"
-	"sync"
 )
 
 type ConfigLoader interface {
@@ -33,7 +32,7 @@ func (l *FileConfigLoader) LoadConfig(vc *viper.Viper) error {
 		vc.AddConfigPath(".")
 		vc.SetConfigName("config")
 	}
-	err := v.ReadInConfig()
+	err := vc.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
 		return fmt.Errorf("Fatal error load config file: %w", err)
 	}
@@ -60,57 +59,52 @@ func (jv JSONSchemaConfigVerifier) VerfiyConfig(vc *viper.Viper) error {
 	return nil
 }
 
-var (
-	v              *viper.Viper
-	configOnce     sync.Once
-	configLoader   ConfigLoader
-	configVerifier ConfigVerifier
-)
-
-//V 获取config viper 对象
-func Config() *viper.Viper {
-	configOnce.Do(func() {
-		v = viper.New()
-	})
-	return v
-}
-
-func SetConfigLoader(l ConfigLoader) {
-	configLoader = l
-}
-
-func SetConfigFile(filename, configType string) {
-	SetConfigLoader(&FileConfigLoader{
-		FileName:   filename,
-		ConfigType: configType,
-	})
-}
-
-//VerifyConfigBySchema 开启配置文件校验使用指定JSONschema 来校验config配置是否符合要求
-func VerifyConfigBySchema(schema string) {
-	configVerifier = &JSONSchemaConfigVerifier{
+func NewJSONSchemaConfigVerifier(schema string) *JSONSchemaConfigVerifier {
+	return &JSONSchemaConfigVerifier{
 		Schema: schema,
 	}
 }
 
-//LoadConfig load Config ,this func should be called before use config
-func LoadConfig() error {
-	configOnce.Do(func() {
-		v = viper.New()
-	})
-	if configLoader == nil {
-		configLoader = &FileConfigLoader{}
+func NewFileConfigLoader(filename, configType string) *FileConfigLoader {
+	return &FileConfigLoader{
+		FileName:   filename,
+		ConfigType: configType,
 	}
-	err := configLoader.LoadConfig(v)
+}
+
+type Config struct {
+	loader   ConfigLoader
+	verifier ConfigVerifier
+	viper    *viper.Viper
+}
+
+func (c *Config) Init() error {
+	v := viper.New()
+	if c.loader == nil {
+		return fmt.Errorf("Can not init config with a nil config loader")
+	}
+	err := c.loader.LoadConfig(v)
 	if err != nil {
 		return err
 	}
 	// 验证配置文件的内容是否正确
-	if configVerifier != nil {
-		err := configVerifier.VerfiyConfig(v)
+	if c.verifier != nil {
+		err := c.verifier.VerfiyConfig(v)
 		if err != nil {
 			return err
 		}
 	}
+	c.viper = v
 	return nil
+}
+
+func (c *Config) Viper() *viper.Viper {
+	return c.viper
+}
+
+func NewConfig(configloader ConfigLoader, configVerifier ConfigVerifier) *Config {
+	return &Config{
+		loader:   configloader,
+		verifier: configVerifier,
+	}
 }

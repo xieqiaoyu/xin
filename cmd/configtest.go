@@ -7,17 +7,13 @@ import (
 	"github.com/xieqiaoyu/xin"
 )
 
-//ConfigTestCmd ConfigTestCmd
-func ConfigTestCmd() *cobra.Command {
+func NewConfigTestCmd(config *xin.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "configtest",
 		Short: "config check",
 		Long:  `check config file is ok`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if ConfigFileToUse != "" {
-				xin.SetConfigFile(ConfigFileToUse, "toml")
-			}
-			if err := xin.LoadConfig(); err != nil {
+			if err := config.Init(); err != nil {
 				fmt.Println(err)
 			} else {
 				fmt.Println("config check pass!")

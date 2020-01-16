@@ -11,19 +11,25 @@ import (
 
 const configSourceKey = "redis_connections"
 
-var instances *sync.Map
+type Service struct {
+	instances *sync.Map
+	config    *xin.Config
+}
 
-func init() {
-	instances = new(sync.Map)
+func NewService(config *xin.Config) *Service {
+	return &Service{
+		instances: new(sync.Map),
+		config:    config,
+	}
 }
 
 //Engine 获取redis 连接对象
-func Engine(id string) (radix.Client, error) {
-	instance, exists := instances.Load(id)
+func (s *Service) Engine(id string) (radix.Client, error) {
+	instance, exists := s.instances.Load(id)
 	if exists {
 		return instance.(radix.Client), nil
 	}
-	v := xin.Config()
+	v := s.config.Viper()
 	connectionSourceKey := fmt.Sprintf("%s.%s", configSourceKey, id)
 	redisURI := v.GetString(connectionSourceKey)
 	if redisURI == "" {
@@ -36,7 +42,7 @@ func Engine(id string) (radix.Client, error) {
 		xlog.WithTag("REDIS").WriteCritical("Fail to connect redis use uri %s, Err:%s", redisURI, err)
 		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to create redis connect pool")
 	}
-	instance, loaded := instances.LoadOrStore(id, redisPool)
+	instance, loaded := s.instances.LoadOrStore(id, redisPool)
 	if loaded {
 		redisPool.Close()
 	}
