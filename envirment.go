@@ -14,11 +14,11 @@ type Envirment interface {
 }
 
 type EnvSetting struct {
-	config *Config
+	config EnvConfig
 }
 
 func (e *EnvSetting) Mode() Mode {
-	env := e.config.Viper().GetString("env")
+	env := e.config.Env()
 	switch env {
 	case "dev", "", "debug":
 		return DevMode
@@ -32,7 +32,11 @@ func (e *EnvSetting) Mode() Mode {
 	}
 }
 
-func NewEnvSetting(config *Config) *EnvSetting {
+type EnvConfig interface {
+	Env() string
+}
+
+func NewEnvSetting(config EnvConfig) *EnvSetting {
 	return &EnvSetting{
 		config: config,
 	}

@@ -78,6 +78,13 @@ type Config struct {
 	viper    *viper.Viper
 }
 
+func NewConfig(configloader ConfigLoader, configVerifier ConfigVerifier) *Config {
+	return &Config{
+		loader:   configloader,
+		verifier: configVerifier,
+	}
+}
+
 func (c *Config) Init() error {
 	v := viper.New()
 	if c.loader == nil {
@@ -102,17 +109,14 @@ func (c *Config) Verify() error {
 	return c.Init()
 }
 
-func (c *Config) HttpAddr() string {
+func (c *Config) HttpListen() string {
 	return c.viper.GetString("http.listen")
+}
+
+func (c *Config) Env() string {
+	return c.viper.GetString("env")
 }
 
 func (c *Config) Viper() *viper.Viper {
 	return c.viper
-}
-
-func NewConfig(configloader ConfigLoader, configVerifier ConfigVerifier) *Config {
-	return &Config{
-		loader:   configloader,
-		verifier: configVerifier,
-	}
 }

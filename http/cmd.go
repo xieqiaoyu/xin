@@ -10,11 +10,11 @@ import (
 	"syscall"
 )
 
-type Server interface {
+type ServerInterface interface {
 	GetHttpServer() *http.Server
 }
 
-type InitializeServerFunc func() (Server, error)
+type InitializeServerFunc func() (ServerInterface, error)
 
 //NewHttpCmd Get a cobra command start http server
 func NewHttpCmd(getServer InitializeServerFunc) *cobra.Command {
