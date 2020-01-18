@@ -1,4 +1,4 @@
-package http
+package server
 
 import (
 	"github.com/gin-gonic/gin"
@@ -11,13 +11,19 @@ type Service interface {
 }
 
 type Server struct {
-	config  *xin.Config
+	//config  *xin.Config
+	config  ServerConfig
 	env     xin.Envirment
 	service Service
 }
 
+type ServerConfig interface {
+	HttpAddr() string
+}
+
 func (s *Server) GetHttpServer() *http.Server {
-	addr := s.config.Viper().GetString("http.listen")
+	//addr := s.config.Viper().GetString("http.listen")
+	addr := s.config.HttpAddr()
 	if addr == "" {
 		addr = ":8080"
 	}
@@ -42,7 +48,7 @@ func (s *Server) GetHttpServer() *http.Server {
 	}
 }
 
-func NewServer(env xin.Envirment, config *xin.Config, service Service) *Server {
+func NewServer(env xin.Envirment, config ServerConfig, service Service) *Server {
 	return &Server{
 		config:  config,
 		env:     env,

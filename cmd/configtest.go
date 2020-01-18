@@ -7,13 +7,17 @@ import (
 	"github.com/xieqiaoyu/xin"
 )
 
-func NewConfigTestCmd(config *xin.Config) *cobra.Command {
+type VerifiableConfig interface {
+	Verify() error
+}
+
+func NewConfigTestCmd(config VerifiableConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "configtest",
 		Short: "config check",
 		Long:  `check config file is ok`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := config.Init(); err != nil {
+			if err := config.Verify(); err != nil {
 				fmt.Println(err)
 			} else {
 				fmt.Println("config check pass!")

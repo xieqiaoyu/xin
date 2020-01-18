@@ -98,6 +98,14 @@ func (c *Config) Init() error {
 	return nil
 }
 
+func (c *Config) Verify() error {
+	return c.Init()
+}
+
+func (c *Config) HttpAddr() string {
+	return c.viper.GetString("http.listen")
+}
+
 func (c *Config) Viper() *viper.Viper {
 	return c.viper
 }
