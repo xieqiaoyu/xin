@@ -1,7 +1,6 @@
 package postgre
 
 import (
-	"fmt"
 	"github.com/xieqiaoyu/xin"
 	"sync"
 
@@ -10,12 +9,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const logEnableKey = "database_enable_log"
-const configSourceKey = "database_connections"
+type PostgreConfig interface {
+	EnableDbLog() bool
+	GetPostgreSource(id string) (string, error)
+}
 
 type Service struct {
 	instances *sync.Map
-	config    *xin.Config
+	config    PostgreConfig
 }
 
 func NewService(config *xin.Config) *Service {
@@ -32,20 +33,18 @@ func (s *Service) Engine(id string) (*xorm.Engine, error) {
 		return dbInstance.(*xorm.Engine), nil
 	}
 
-	conf := s.config.Viper()
-	connectionSourceKey := fmt.Sprintf("%s.%s", configSourceKey, id)
-	dbSource := conf.GetString(connectionSourceKey)
-
-	if dbSource == "" {
-		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
+	dbSource, err := s.config.GetPostgreSource(id)
+	if err != nil {
+		return nil, xin.NewWrapE(err)
 	}
+
 	dbInstanceTemp, err := xorm.NewEngine("postgres", dbSource)
 	if err != nil {
 		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to connect database use source string %s, Err:%w", dbSource, err)
 
 	}
 
-	logEnable := conf.GetBool(logEnableKey)
+	logEnable := s.config.EnableDbLog()
 	if logEnable {
 		dbInstanceTemp.ShowSQL(true)
 		//dbInstanceTemp.Logger().SetLevel(core.LOG_DEBUG)

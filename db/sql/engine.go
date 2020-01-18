@@ -1,7 +1,6 @@
 package sql
 
 import (
-	"fmt"
 	"github.com/xieqiaoyu/xin"
 	"sync"
 )
@@ -9,12 +8,17 @@ import (
 const configSourceKey = "sql_connections.%s.source"
 const configDriverKey = "sql_connections.%s.driver"
 
-type Service struct {
-	instances *sync.Map
-	config    *xin.Config
+type SQLConfig interface {
+	EnableDbLog() bool
+	GetSQLSource(id string) (driver string, source string, err error)
 }
 
-func NewService(config *xin.Config) *Service {
+type Service struct {
+	instances *sync.Map
+	config    SQLConfig
+}
+
+func NewService(config SQLConfig) *Service {
 	return &Service{
 		instances: new(sync.Map),
 		config:    config,
@@ -37,19 +41,11 @@ func (s *Service) Engine(id string, genHandle GenEngineFunc, closeHandle CloseEn
 		return dbInstance, nil
 	}
 
-	conf := s.config.Viper()
-	connectionDriverKey := fmt.Sprintf(configDriverKey, id)
-
-	sqlDriver := conf.GetString(connectionDriverKey)
-	if sqlDriver == "" {
-		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to get sql driver string, please check config key %s in %s", configDriverKey, conf.ConfigFileUsed())
+	sqlDriver, sqlSource, err := s.config.GetSQLSource(id)
+	if err != nil {
+		return nil, xin.NewWrapE(err)
 	}
-	connectionSourceKey := fmt.Sprintf(configSourceKey, id)
-	sqlSource := conf.GetString(connectionSourceKey)
 
-	if sqlSource == "" {
-		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to get sql source string, please check config key %s in %s", connectionSourceKey, conf.ConfigFileUsed())
-	}
 	dbInstanceTemp, err := genHandle(sqlDriver, sqlSource)
 	if err != nil {
 		return nil, xin.WrapEf(&xin.InternalError{}, "create engine Err:%w", err)

@@ -117,6 +117,29 @@ func (c *Config) Env() string {
 	return c.viper.GetString("env")
 }
 
+func (c *Config) EnableDbLog() bool {
+	return c.viper.GetBool("database_enable_log")
+}
+
+func (c *Config) GetPostgreSource(id string) (string, error) {
+	connectionSourceKey := fmt.Sprintf("%s.%s", "database_connections", id)
+	dbSource := c.viper.GetString(connectionSourceKey)
+	if dbSource == "" {
+		return "", WrapEf(&InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
+
+	}
+	return dbSource, nil
+}
+
+func (c *Config) GetRedisURI(id string) (string, error) {
+	connectionSourceKey := fmt.Sprintf("%s.%s", "redis_connections", id)
+	redisURI := c.viper.GetString(connectionSourceKey)
+	if redisURI == "" {
+		return "", WrapEf(&InternalError{}, "Fail to get redis URI,pleas check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
+	}
+	return redisURI, nil
+}
+
 func (c *Config) Viper() *viper.Viper {
 	return c.viper
 }

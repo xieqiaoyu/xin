@@ -15,7 +15,7 @@ func (s *Service) newXormEngine(driverName, dataSourceName string) (engine inter
 
 	}
 
-	logEnable := s.config.Viper().GetBool(logEnableKey)
+	logEnable := s.config.EnableDbLog()
 	if logEnable {
 		e.ShowSQL(true)
 		//engine.Logger().SetLevel(core.LOG_DEBUG)
