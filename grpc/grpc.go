@@ -24,26 +24,34 @@ type CustomError interface {
 //RegistServerFunc RegistServerFunc
 type RegistServerFunc func(*grpc.Server)
 
-func Server(opts ...grpc.ServerOption) *grpc.Server {
-	s := grpc.NewServer(opts...)
-	// if in development we enable grpc reflection
-	if xin.Mode() == xin.Dev {
-		reflection.Register(s)
-	}
-	return s
+type ServerConfig interface {
+	GrpcListen() (network, address string)
 }
 
-//ServeTCP serve Grpc server on tcp
-func ServeTCP(s *grpc.Server, addr string) error {
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		return xin.NewWrapEf("failed to listen: %w", err)
-	}
+type Server struct {
+	config              ServerConfig
+	opts                []grpc.ServerOption
+	env                 xin.Envirment
+	registServerHandler RegistServerFunc
+}
 
-	if err := s.Serve(lis); err != nil {
-		return xin.NewWrapEf("failed to serve: %w", err)
+func (s *Server) GetGrpcServer() (*grpc.Server, error) {
+	grpcServer := grpc.NewServer(s.opts...)
+	if s.env.Mode() == xin.DevMode {
+		reflection.Register(grpcServer)
 	}
-	return nil
+	if s.registServerHandler != nil {
+		s.registServerHandler(grpcServer)
+	}
+	return grpcServer, nil
+}
+
+func (s *Server) GetNetListener() (net.Listener, error) {
+	network, addr := s.config.GrpcListen()
+	if network == "" {
+		network = "tcp"
+	}
+	return net.Listen(network, addr)
 }
 
 type UnaryContext struct {
