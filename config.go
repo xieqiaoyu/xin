@@ -140,6 +140,10 @@ func (c *Config) GetRedisURI(id string) (string, error) {
 	return redisURI, nil
 }
 
+func (c *Config) GrpcListen() (network, address string) {
+	return c.viper.GetString("grpc.network"), c.viper.GetString("grpc.listen")
+}
+
 func (c *Config) Viper() *viper.Viper {
 	return c.viper
 }
