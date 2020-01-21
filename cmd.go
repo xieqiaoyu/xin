@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type VerifiableConfig interface {
@@ -34,4 +37,10 @@ func NewVersionCmd(version string) *cobra.Command {
 			fmt.Println(version)
 		},
 	}
+}
+
+func WaitForQuitSignal() {
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 }

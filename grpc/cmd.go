@@ -1,14 +1,12 @@
 package grpc
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/spf13/cobra"
+	"github.com/xieqiaoyu/xin"
 	xlog "github.com/xieqiaoyu/xin/log"
 	"google.golang.org/grpc"
 	"net"
+	"os"
 )
 
 type ServerInterface interface {
@@ -51,9 +49,8 @@ func Cmd(getServer InitializeServerFunc) *cobra.Command {
 				}
 			}()
 
-			quit := make(chan os.Signal)
-			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-			<-quit
+			xin.WaitForQuitSignal()
+
 			xlog.WriteInfo("Shutdown Server ...")
 			s.GracefulStop()
 			xlog.WriteInfo("Server exited")

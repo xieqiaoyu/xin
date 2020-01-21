@@ -3,11 +3,10 @@ package http
 import (
 	"context"
 	"github.com/spf13/cobra"
+	"github.com/xieqiaoyu/xin"
 	xlog "github.com/xieqiaoyu/xin/log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 type ServerInterface interface {
@@ -43,9 +42,8 @@ func NewHttpCmd(getServer InitializeServerFunc) *cobra.Command {
 				}
 			}()
 
-			quit := make(chan os.Signal)
-			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-			<-quit
+			xin.WaitForQuitSignal()
+
 			xlog.WriteInfo("Shutdown Server ...")
 			ctx := context.Background()
 			if err := httpServer.Shutdown(ctx); err != nil {
