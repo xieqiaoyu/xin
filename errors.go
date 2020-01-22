@@ -13,25 +13,25 @@ type WrapError interface {
 	Wrap(error)
 }
 
-//tracedError a WrapError store the position where error occur
-type tracedError struct {
+//TracedError a WrapError store the position where error occur
+type TracedError struct {
 	File string
 	Line int
 	Err  error
 }
 
 //Error error interface
-func (e *tracedError) Error() string {
+func (e *TracedError) Error() string {
 	return fmt.Sprintf("%s (%s:%d)", e.Err, e.File, e.Line)
 }
 
 //Unwrap use for errors.Unwrap
-func (e *tracedError) Unwrap() error {
+func (e *TracedError) Unwrap() error {
 	return e.Err
 }
 
 //Wrap WrapError interface,do not call this function directly , use  WrapE func instead
-func (e *tracedError) Wrap(err error) {
+func (e *TracedError) Wrap(err error) {
 	e.Err = err
 	_, e.File, e.Line, _ = runtime.Caller(2)
 }
@@ -55,24 +55,24 @@ func WrapEf(Err WrapError, format string, a ...interface{}) error {
 }
 
 //NewWrapE @deprecated use NewTracedE instead
-// create a new tracedError and wrap the given error into it
+// create a new TracedError and wrap the given error into it
 func NewWrapE(err error) error {
-	e := &tracedError{}
+	e := &TracedError{}
 	e.Wrap(err)
 	return e
 }
 
-//NewTracedE create a new tracedError and wrap the given error into it
+//NewTracedE create a new TracedError and wrap the given error into it
 func NewTracedE(err error) error {
-	e := &tracedError{}
+	e := &TracedError{}
 	e.Wrap(err)
 	return e
 }
 
 //NewWrapEf @deprecated use NewTracedEf instead
-// create an error by format string and wrap it into a new tracedError
+// create an error by format string and wrap it into a new TracedError
 func NewWrapEf(format string, a ...interface{}) error {
-	e := &tracedError{}
+	e := &TracedError{}
 	var wErr error
 	if len(a) > 0 {
 		wErr = fmt.Errorf(format, a...)
@@ -83,9 +83,9 @@ func NewWrapEf(format string, a ...interface{}) error {
 	return e
 }
 
-//NewTracedEf create an error by format string and wrap it into a new tracedError
+//NewTracedEf create an error by format string and wrap it into a new TracedError
 func NewTracedEf(format string, a ...interface{}) error {
-	e := &tracedError{}
+	e := &TracedError{}
 	var wErr error
 	if len(a) > 0 {
 		wErr = fmt.Errorf(format, a...)
@@ -97,4 +97,4 @@ func NewTracedEf(format string, a ...interface{}) error {
 }
 
 //InternalError an error for framework internal use
-type InternalError struct{ tracedError }
+type InternalError struct{ TracedError }
