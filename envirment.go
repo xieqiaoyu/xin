@@ -9,14 +9,24 @@ const (
 	ReleaseMode
 )
 
+//Envirment envirment interface
 type Envirment interface {
+	//Return working mode
 	Mode() Mode
 }
 
+//EnvConfig a config interface for envirment
+type EnvConfig interface {
+	//get working mode string
+	Env() string
+}
+
+//EnvSetting implement Envirment interface
 type EnvSetting struct {
 	config EnvConfig
 }
 
+//Mode return app working mode
 func (e *EnvSetting) Mode() Mode {
 	env := e.config.Env()
 	switch env {
@@ -32,10 +42,7 @@ func (e *EnvSetting) Mode() Mode {
 	}
 }
 
-type EnvConfig interface {
-	Env() string
-}
-
+//NewEnvSetting generate new EnvSetting
 func NewEnvSetting(config EnvConfig) *EnvSetting {
 	return &EnvSetting{
 		config: config,
