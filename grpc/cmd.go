@@ -16,7 +16,7 @@ type ServerInterface interface {
 
 type InitializeServerFunc func() (ServerInterface, error)
 
-func Cmd(getServer InitializeServerFunc) *cobra.Command {
+func NewGrpcCmd(getServer InitializeServerFunc) *cobra.Command {
 	return &cobra.Command{
 		Use:   "grpc",
 		Short: "start grpc service",

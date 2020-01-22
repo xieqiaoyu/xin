@@ -35,6 +35,15 @@ type Server struct {
 	registServerHandler RegistServerFunc
 }
 
+func NewServer(config ServerConfig, env xin.Envirment, opts []grpc.ServerOption, registServerHandler RegistServerFunc) *Server {
+	return &Server{
+		config:              config,
+		opts:                opts,
+		env:                 env,
+		registServerHandler: registServerHandler,
+	}
+}
+
 func (s *Server) GetGrpcServer() (*grpc.Server, error) {
 	grpcServer := grpc.NewServer(s.opts...)
 	if s.env.Mode() == xin.DevMode {
