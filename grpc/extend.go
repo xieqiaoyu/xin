@@ -3,13 +3,10 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/xieqiaoyu/xin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
-	"net"
 	"strconv"
 	"time"
 )
@@ -21,48 +18,7 @@ type CustomError interface {
 	GetMsg() string
 }
 
-//RegistServerFunc RegistServerFunc
-type RegistServerFunc func(*grpc.Server)
-
-type ServerConfig interface {
-	GrpcListen() (network, address string)
-}
-
-type Server struct {
-	config              ServerConfig
-	opts                []grpc.ServerOption
-	env                 xin.Envirment
-	registServerHandler RegistServerFunc
-}
-
-func NewServer(config ServerConfig, env xin.Envirment, opts []grpc.ServerOption, registServerHandler RegistServerFunc) *Server {
-	return &Server{
-		config:              config,
-		opts:                opts,
-		env:                 env,
-		registServerHandler: registServerHandler,
-	}
-}
-
-func (s *Server) GetGrpcServer() (*grpc.Server, error) {
-	grpcServer := grpc.NewServer(s.opts...)
-	if s.env.Mode() == xin.DevMode {
-		reflection.Register(grpcServer)
-	}
-	if s.registServerHandler != nil {
-		s.registServerHandler(grpcServer)
-	}
-	return grpcServer, nil
-}
-
-func (s *Server) GetNetListener() (net.Listener, error) {
-	network, addr := s.config.GrpcListen()
-	if network == "" {
-		network = "tcp"
-	}
-	return net.Listen(network, addr)
-}
-
+//UnaryContext a Context can call UnaryChainServerInterceptor as middleware
 type UnaryContext struct {
 	interceptors []UnaryChainServerInterceptor
 	curIndex     int
@@ -74,21 +30,27 @@ type UnaryContext struct {
 	RespErr      error                 // same as UnaryServerInterceptor return value err
 }
 
+//Deadline Context implement
 func (c *UnaryContext) Deadline() (deadline time.Time, ok bool) {
 	return c.grpcCtx.Deadline()
 }
+
+//Err Context implement
 func (c *UnaryContext) Err() error {
 	return c.grpcCtx.Err()
 }
 
+//Done Context implement
 func (c *UnaryContext) Done() <-chan struct{} {
 	return c.grpcCtx.Done()
 }
 
+//Value Context implement
 func (c *UnaryContext) Value(key interface{}) interface{} {
 	return c.grpcCtx.Value(key)
 }
 
+//Next call next interceptor
 func (c *UnaryContext) Next() {
 	if c.curIndex < c.maxIndex {
 		handler := c.interceptors[c.curIndex]
@@ -97,14 +59,17 @@ func (c *UnaryContext) Next() {
 	}
 }
 
+//Abort skip all remain interceptor
 func (c *UnaryContext) Abort() {
 	c.curIndex = c.maxIndex
 }
 
+//IsAborted whether there is interceptor remain
 func (c *UnaryContext) IsAborted() bool {
 	return c.curIndex >= c.maxIndex
 }
 
+//UnaryChainServerInterceptor handle like middleware in http
 type UnaryChainServerInterceptor func(c *UnaryContext)
 
 //UnaryChainInterceptor  Option set the ServerChainInterceptor The first interceptor will be the outer most, while the last interceptor will be the inner most wrapper around the real call.

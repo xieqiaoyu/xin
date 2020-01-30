@@ -9,13 +9,18 @@ import (
 	"os"
 )
 
+//ServerInterface Grpc service interface
 type ServerInterface interface {
+	//GetGrpcServer get the grpc server
 	GetGrpcServer() (*grpc.Server, error)
+	//GetNetListener get grpc Net Listener
 	GetNetListener() (net.Listener, error)
 }
 
+//InitializeServerFunc function to Initialize grpc server
 type InitializeServerFunc func() (ServerInterface, error)
 
+//NewGrpcCmd get a cobra command to run grpc service
 func NewGrpcCmd(getServer InitializeServerFunc) *cobra.Command {
 	return &cobra.Command{
 		Use:   "grpc",
