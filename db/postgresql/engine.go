@@ -1,24 +1,25 @@
-package postgre
+package postgresql
 
 import (
 	"github.com/xieqiaoyu/xin"
 	"sync"
 
 	"xorm.io/xorm"
-	// 需要执行postgres 包的 init
-	_ "github.com/lib/pq"
 )
 
+//PostgreConfig a config provide postgresql connection setting
 type PostgreConfig interface {
 	EnableDbLog() bool
 	GetPostgreSource(id string) (string, error)
 }
 
+//Service postgresql db service
 type Service struct {
 	instances *sync.Map
 	config    PostgreConfig
 }
 
+//NewService Create a new postgresql db service
 func NewService(config *xin.Config) *Service {
 	return &Service{
 		instances: new(sync.Map),
@@ -26,6 +27,7 @@ func NewService(config *xin.Config) *Service {
 	}
 }
 
+//Engine get an xorm engine by id
 func (s *Service) Engine(id string) (*xorm.Engine, error) {
 	dbInstance, exists := s.instances.Load(id)
 	if exists {
@@ -59,6 +61,7 @@ func (s *Service) Engine(id string) (*xorm.Engine, error) {
 	return dbInstance.(*xorm.Engine), nil
 }
 
+//Session get an xorm session by id
 func (s *Service) Session(id string) (session *xorm.Session, err error) {
 	engine, err := s.Engine(id)
 	if err != nil {

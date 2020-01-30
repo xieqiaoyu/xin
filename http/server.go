@@ -17,11 +17,11 @@ type Server struct {
 }
 
 type ServerConfig interface {
-	HttpListen() string
+	HTTPListen() string
 }
 
 func (s *Server) GetHttpServer() *http.Server {
-	addr := s.config.HttpListen()
+	addr := s.config.HTTPListen()
 	if addr == "" {
 		addr = ":8080"
 	}

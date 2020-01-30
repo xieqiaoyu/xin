@@ -7,23 +7,26 @@ import (
 	"github.com/mediocregopher/radix/v3"
 )
 
-type RedisConfig interface {
+//Config config provide redis connection setting
+type Config interface {
 	GetRedisURI(id string) (string, error)
 }
 
+//Service redis connect service
 type Service struct {
 	instances *sync.Map
-	config    RedisConfig
+	config    Config
 }
 
-func NewService(config RedisConfig) *Service {
+//NewService create a new radis connect service
+func NewService(config Config) *Service {
 	return &Service{
 		instances: new(sync.Map),
 		config:    config,
 	}
 }
 
-//Engine 获取redis 连接对象
+//Engine get radix client by id
 func (s *Service) Engine(id string) (radix.Client, error) {
 	instance, exists := s.instances.Load(id)
 	if exists {

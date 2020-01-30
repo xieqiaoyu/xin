@@ -41,7 +41,7 @@ func (s RFC5424SeverityLevel) GetLiteral() string {
 
 var _ logLevel = RFC5424SeverityLevel(0)
 
-// 日志的错误级别
+// predefine log level
 const (
 	Debug     RFC5424SeverityLevel = 7
 	Info      RFC5424SeverityLevel = 6
@@ -53,7 +53,7 @@ const (
 	Emergency RFC5424SeverityLevel = 0
 )
 
-// Log 日志结构体
+// Log Log struct
 type Log struct {
 	Level logLevel
 	Tag   string
@@ -62,7 +62,7 @@ type Log struct {
 	Line  int
 }
 
-//WithTag 带tag 的日志记录
+//WithTag new Log with tag
 func WithTag(tag string) *Log {
 	return &Log{
 		Tag: tag,
@@ -171,7 +171,7 @@ func (l Log) Write(level logLevel, trace bool, format string, v ...interface{}) 
 	doWrite(&l, trace)
 }
 
-//Write 记录日志
+//Write write log
 func Write(level logLevel, trace bool, format string, v ...interface{}) {
 	var file string
 	var line int
@@ -195,6 +195,7 @@ func Write(level logLevel, trace bool, format string, v ...interface{}) {
 	doWrite(l, trace)
 }
 
+//doWrite do log write action
 func doWrite(l *Log, trace bool) {
 	if trace {
 		log.Println(fmt.Sprintf("%s [%s] [%s] %s --- %s:%d", time.Now().Format(time.RFC3339), l.Level.GetLiteral(), l.Tag, l.Msg, l.File, l.Line))

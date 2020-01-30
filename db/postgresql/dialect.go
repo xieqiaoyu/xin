@@ -1,4 +1,4 @@
-package postgre
+package postgresql
 
 import (
 	"github.com/lib/pq"
@@ -7,6 +7,7 @@ import (
 //StringArray postgres array type support for xorm
 type StringArray []string
 
+//FromDB xorm data type implement
 func (a *StringArray) FromDB(bts []byte) error {
 	pqArray := new(pq.StringArray)
 	err := pqArray.Scan(bts)
@@ -17,6 +18,7 @@ func (a *StringArray) FromDB(bts []byte) error {
 	return nil
 }
 
+//ToDB xorm data type implement
 func (a StringArray) ToDB() ([]byte, error) {
 	pqArray := pq.StringArray(a)
 	v, err := pqArray.Value()

@@ -7,6 +7,7 @@ import (
 	"xorm.io/xorm"
 )
 
+//XormTestingLogger xorm logger for testing
 type XormTestingLogger struct {
 	t       *testing.T
 	level   xorm_core.LogLevel
@@ -15,6 +16,7 @@ type XormTestingLogger struct {
 
 var _ xorm_core.ILogger = (*XormTestingLogger)(nil)
 
+//SetXormTestingLogger reset giving xorm Logger to XormTestingLogger
 func SetXormTestingLogger(engine *xorm.Engine, t *testing.T) {
 	newLogger := NewXormTestingLogger(t)
 	oldLogger := engine.Logger()
@@ -23,6 +25,7 @@ func SetXormTestingLogger(engine *xorm.Engine, t *testing.T) {
 	engine.SetLogger(newLogger)
 }
 
+//NewXormTestingLogger create a new XormTestingLogger for testing
 func NewXormTestingLogger(t *testing.T) *XormTestingLogger {
 	return &XormTestingLogger{
 		t: t,

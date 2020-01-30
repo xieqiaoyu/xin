@@ -7,19 +7,23 @@ import (
 	xjsonschema "github.com/xieqiaoyu/xin/util/jsonschema"
 )
 
+//ConfigLoader load config interface
 type ConfigLoader interface {
 	LoadConfig(vc *viper.Viper) error
 }
 
+//ConfigVerifier verify config interface
 type ConfigVerifier interface {
 	VerfiyConfig(vc *viper.Viper) error
 }
 
+//FileConfigLoader load config from file system
 type FileConfigLoader struct {
 	FileName   string
 	ConfigType string
 }
 
+//LoadConfig ConfigLoader interface
 func (l *FileConfigLoader) LoadConfig(vc *viper.Viper) error {
 	if l.ConfigType != "" {
 		vc.SetConfigType(l.ConfigType)
@@ -39,10 +43,12 @@ func (l *FileConfigLoader) LoadConfig(vc *viper.Viper) error {
 	return nil
 }
 
+//JSONSchemaConfigVerifier verfiy config by jsonschema
 type JSONSchemaConfigVerifier struct {
 	Schema string
 }
 
+//VerfiyConfig ConfigVerifier interface
 func (jv JSONSchemaConfigVerifier) VerfiyConfig(vc *viper.Viper) error {
 	config := make(map[string]interface{})
 	err := vc.Unmarshal(&config)
@@ -59,12 +65,14 @@ func (jv JSONSchemaConfigVerifier) VerfiyConfig(vc *viper.Viper) error {
 	return nil
 }
 
+//NewJSONSchemaConfigVerifier create a new jsonschema config verifier
 func NewJSONSchemaConfigVerifier(schema string) *JSONSchemaConfigVerifier {
 	return &JSONSchemaConfigVerifier{
 		Schema: schema,
 	}
 }
 
+//NewFileConfigLoader create a new file config loader
 func NewFileConfigLoader(filename, configType string) *FileConfigLoader {
 	return &FileConfigLoader{
 		FileName:   filename,
@@ -72,12 +80,14 @@ func NewFileConfigLoader(filename, configType string) *FileConfigLoader {
 	}
 }
 
+//Config Config
 type Config struct {
 	loader   ConfigLoader
 	verifier ConfigVerifier
 	viper    *viper.Viper
 }
 
+//NewConfig create a new config
 func NewConfig(configloader ConfigLoader, configVerifier ConfigVerifier) *Config {
 	return &Config{
 		loader:   configloader,
@@ -85,6 +95,7 @@ func NewConfig(configloader ConfigLoader, configVerifier ConfigVerifier) *Config
 	}
 }
 
+//Init init config,load config and verfiy ,this method must be called before other method
 func (c *Config) Init() error {
 	v := viper.New()
 	if c.loader == nil {
@@ -105,22 +116,27 @@ func (c *Config) Init() error {
 	return nil
 }
 
+//Verify verify config
 func (c *Config) Verify() error {
 	return c.Init()
 }
 
-func (c *Config) HttpListen() string {
+//HTTPListen get http listen string
+func (c *Config) HTTPListen() string {
 	return c.viper.GetString("http.listen")
 }
 
+//Env get env string
 func (c *Config) Env() string {
 	return c.viper.GetString("env")
 }
 
+//EnableDbLog get config for enable db Log
 func (c *Config) EnableDbLog() bool {
 	return c.viper.GetBool("database_enable_log")
 }
 
+//GetPostgreSource get source string for postgresql
 func (c *Config) GetPostgreSource(id string) (string, error) {
 	connectionSourceKey := fmt.Sprintf("%s.%s", "database_connections", id)
 	dbSource := c.viper.GetString(connectionSourceKey)
@@ -131,6 +147,7 @@ func (c *Config) GetPostgreSource(id string) (string, error) {
 	return dbSource, nil
 }
 
+//GetRedisURI get redis connect string
 func (c *Config) GetRedisURI(id string) (string, error) {
 	connectionSourceKey := fmt.Sprintf("%s.%s", "redis_connections", id)
 	redisURI := c.viper.GetString(connectionSourceKey)
@@ -140,10 +157,12 @@ func (c *Config) GetRedisURI(id string) (string, error) {
 	return redisURI, nil
 }
 
+//GrpcListen get grpc listen info
 func (c *Config) GrpcListen() (network, address string) {
 	return c.viper.GetString("grpc.network"), c.viper.GetString("grpc.listen")
 }
 
+//Viper Get viper instance of config
 func (c *Config) Viper() *viper.Viper {
 	return c.viper
 }

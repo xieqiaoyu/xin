@@ -8,17 +8,20 @@ import (
 const configSourceKey = "sql_connections.%s.source"
 const configDriverKey = "sql_connections.%s.driver"
 
-type SQLConfig interface {
+//Config config provide sql connection setting
+type Config interface {
 	EnableDbLog() bool
 	GetSQLSource(id string) (driver string, source string, err error)
 }
 
+//Service common sql connect service
 type Service struct {
 	instances *sync.Map
-	config    SQLConfig
+	config    Config
 }
 
-func NewService(config SQLConfig) *Service {
+//NewService create a new sql connect service
+func NewService(config Config) *Service {
 	return &Service{
 		instances: new(sync.Map),
 		config:    config,

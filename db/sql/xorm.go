@@ -31,7 +31,7 @@ func closeXormEngine(engine interface{}) error {
 	return e.Close()
 }
 
-//XormEngine load a
+//XormEngine load an xorm engine by id
 func (s *Service) XormEngine(id string) (engine *xorm.Engine, err error) {
 	e, err := s.Engine(id, s.newXormEngine, closeXormEngine)
 	if err != nil {
@@ -66,6 +66,7 @@ func (s *Service) XormSession(id string, dbInf xorm.Interface) (session *xorm.Se
 //XormPqStringArray postgres array type support for xorm
 type XormPqStringArray []string
 
+//FromDB xorm custom datatype implement
 func (a *XormPqStringArray) FromDB(bts []byte) error {
 	pqArray := new(pq.StringArray)
 	err := pqArray.Scan(bts)
@@ -76,6 +77,7 @@ func (a *XormPqStringArray) FromDB(bts []byte) error {
 	return nil
 }
 
+//ToDB xorm custom datatype implement
 func (a XormPqStringArray) ToDB() ([]byte, error) {
 	pqArray := pq.StringArray(a)
 	v, err := pqArray.Value()

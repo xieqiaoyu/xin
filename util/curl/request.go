@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+//Request Request
 type Request struct {
 	Raw *http.Request
 }

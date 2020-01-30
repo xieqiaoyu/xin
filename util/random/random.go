@@ -17,8 +17,8 @@ const (
 	letterIdxMask = 1<<letterIdxBits - 1
 )
 
-//RandomNumString generate random string with number letters
-func RandomNumString(length int) string {
+//NumString generate random string with number letters
+func NumString(length int) string {
 	if length <= 0 {
 		return ""
 	}
@@ -41,8 +41,8 @@ func RandomNumString(length int) string {
 	return sb.String()
 }
 
-//RandomString generate random string with letters and "_-"
-func RandomString(length int) string {
+//String generate random string with letters and "_-"
+func String(length int) string {
 	if length <= 0 {
 		return ""
 	}

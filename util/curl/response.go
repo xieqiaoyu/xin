@@ -14,6 +14,7 @@ type Response struct {
 	Body []byte
 }
 
+//String Stringer implement
 func (r *Response) String() string {
 	b := new(bytes.Buffer)
 	fmt.Fprintf(b, "%s %s\n", r.Raw.Proto, r.Raw.Status)

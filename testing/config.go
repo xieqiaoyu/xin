@@ -9,12 +9,14 @@ import (
 	"time"
 )
 
+//EtcdV3ConfigLoader config loader load config from etcdv3
 type EtcdV3ConfigLoader struct {
 	Config     *etcdctl.Config
 	Key        string
 	ConfigType string
 }
 
+//LoadConfig implement config loader
 func (l *EtcdV3ConfigLoader) LoadConfig(vc *viper.Viper) error {
 	cli, err := etcdctl.New(*l.Config)
 	if err != nil {
@@ -41,6 +43,7 @@ func (l *EtcdV3ConfigLoader) LoadConfig(vc *viper.Viper) error {
 	return nil
 }
 
+//NewEtcdV3ConfigLoader create a etcdv3 config loader
 func NewEtcdV3ConfigLoader(endpoint, key string) *EtcdV3ConfigLoader {
 	return &EtcdV3ConfigLoader{
 		Config: &etcdctl.Config{

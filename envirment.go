@@ -1,5 +1,6 @@
 package xin
 
+//Mode app mode
 type Mode int
 
 // Predefine mode const
