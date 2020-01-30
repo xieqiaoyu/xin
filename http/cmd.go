@@ -9,14 +9,17 @@ import (
 	"os"
 )
 
+//ServerInterface a server can provide http server
 type ServerInterface interface {
-	GetHttpServer() *http.Server
+	// provide the http server service
+	GetHTTPServer() *http.Server
 }
 
+//InitializeServerFunc function init http Server  gives the posibility for dependence inject
 type InitializeServerFunc func() (ServerInterface, error)
 
-//NewHttpCmd Get a cobra command start http server
-func NewHttpCmd(getServer InitializeServerFunc) *cobra.Command {
+//NewHTTPCmd Get a cobra command start http server
+func NewHTTPCmd(getServer InitializeServerFunc) *cobra.Command {
 	return &cobra.Command{
 		Use:   "http",
 		Short: "http server",
@@ -27,7 +30,7 @@ func NewHttpCmd(getServer InitializeServerFunc) *cobra.Command {
 				xlog.WriteError("Init server fail %s", err)
 				os.Exit(1)
 			}
-			httpServer := server.GetHttpServer()
+			httpServer := server.GetHTTPServer()
 
 			addr := httpServer.Addr
 			if addr == "" {

@@ -6,21 +6,26 @@ import (
 	"net/http"
 )
 
+//Service http service interface
 type Service interface {
+	// register route and middleware into gin engine
 	RegisterRouter(*gin.Engine)
 }
 
+//Server  Http server implement ServerInterface
 type Server struct {
 	config  ServerConfig
 	env     xin.Envirment
 	service Service
 }
 
+//ServerConfig config provide HTTP server setting
 type ServerConfig interface {
 	HTTPListen() string
 }
 
-func (s *Server) GetHttpServer() *http.Server {
+//GetHTTPServer ServerInterface implement
+func (s *Server) GetHTTPServer() *http.Server {
 	addr := s.config.HTTPListen()
 	if addr == "" {
 		addr = ":8080"
@@ -46,6 +51,7 @@ func (s *Server) GetHttpServer() *http.Server {
 	}
 }
 
+//NewServer Create a new HTTP server
 func NewServer(env xin.Envirment, config ServerConfig, service Service) *Server {
 	return &Server{
 		config:  config,

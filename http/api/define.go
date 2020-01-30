@@ -1,5 +1,6 @@
 package api
 
+// define key name used in context
 const (
 	ResultKey = "xinApiResult"
 	//StatusKey context 中使用的api 返回 status key 名称
@@ -21,12 +22,12 @@ const (
 	//SessionKey context 中保存session 的 key
 	SessionKey = "xinSession"
 
-	//S 用于外部引用StatusKey 的shorcut
+	//S shorcut of StatusKey
 	S = StatusKey
-	//E 用于外部引用ErrKey 的shortcut
+	//E shortcut of ErrKey
 	E = ErrKey
-	//D 用于外部引用DataKey 的shortcut
+	//D shortcut of DataKey
 	D = DataKey
-	//U 用于外部引用UserKey 的shortcut
+	//U shortcut of UserKey
 	U = UserKey
 )

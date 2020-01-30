@@ -1,31 +1,23 @@
 package middleware
 
 import (
-	"crypto/rand"
 	"encoding/base32"
 	"github.com/gin-gonic/gin"
 	"github.com/xieqiaoyu/xin"
 	"github.com/xieqiaoyu/xin/http/api"
 	xlog "github.com/xieqiaoyu/xin/log"
 	xsession "github.com/xieqiaoyu/xin/session"
-	"io"
+	"github.com/xieqiaoyu/xin/util/random"
 	"strings"
 )
-
-func GenerateRandomKey(length int) []byte {
-	k := make([]byte, length)
-	if _, err := io.ReadFull(rand.Reader, k); err != nil {
-		return nil
-	}
-	return k
-}
 
 func generateSessionID() string {
 	return strings.TrimRight(
 		base32.StdEncoding.EncodeToString(
-			GenerateRandomKey(32)), "=")
+			random.Bytes(32)), "=")
 }
 
+//Session middleware handle session issue
 func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionID, _ := c.Cookie(name)
@@ -66,7 +58,8 @@ func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 	}
 }
 
-//SessionAuth Get A Session User auth middleware
+//SessionUserAuth Get a Session User auth middleware , this should after Session middleware
+// userKey is the key save user data
 func SessionUserAuth(userKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionStruct, exists := c.Get(api.SessionKey)

@@ -47,25 +47,29 @@ func CheckReqJSON(c *gin.Context, schemaStr string, obj interface{}) (bool, erro
 	return true, nil
 }
 
-func SetStatus(code int) *ApiContext {
-	return &ApiContext{
+//SetStatus get an Cache with giving response body code
+func SetStatus(code int) *Cache {
+	return &Cache{
 		Status: &code,
 	}
 }
 
-func SetData(data interface{}) *ApiContext {
-	return &ApiContext{
+//SetData get an Cache with giving data
+func SetData(data interface{}) *Cache {
+	return &Cache{
 		Data: data,
 	}
 }
 
-func SetError(err error) *ApiContext {
-	return &ApiContext{
+//SetError get an Cache with giving error
+func SetError(err error) *Cache {
+	return &Cache{
 		Err: err,
 	}
 }
 
-func SetErrorf(format string, a ...interface{}) *ApiContext {
+//SetErrorf get an Cache with error by giving format
+func SetErrorf(format string, a ...interface{}) *Cache {
 	var err error
 	if len(a) > 0 {
 		err = fmt.Errorf(format, a...)
@@ -75,13 +79,15 @@ func SetErrorf(format string, a ...interface{}) *ApiContext {
 	return SetError(err)
 }
 
-type ApiContext struct {
+//Cache  response cache of an API Call
+type Cache struct {
 	Status *int
 	Data   interface{}
 	Err    error
 }
 
-func (ac *ApiContext) Apply(c *gin.Context) {
+//Apply apply apiContext on given gin context ,this make the real change of an api call
+func (ac *Cache) Apply(c *gin.Context) {
 	if ac.Status != nil {
 		c.Set(StatusKey, *ac.Status)
 	}
@@ -93,22 +99,26 @@ func (ac *ApiContext) Apply(c *gin.Context) {
 	}
 }
 
-func (ac *ApiContext) SetStatus(code int) *ApiContext {
+//SetStatus set the response code of the Cache
+func (ac *Cache) SetStatus(code int) *Cache {
 	ac.Status = &code
 	return ac
 }
 
-func (ac *ApiContext) SetData(data interface{}) *ApiContext {
+//SetData set the response data of the Cache
+func (ac *Cache) SetData(data interface{}) *Cache {
 	ac.Data = data
 	return ac
 }
 
-func (ac *ApiContext) SetError(err error) *ApiContext {
+//SetError set the error of the Cache
+func (ac *Cache) SetError(err error) *Cache {
 	ac.Err = err
 	return ac
 }
 
-func (ac *ApiContext) SetErrorf(format string, a ...interface{}) *ApiContext {
+//SetErrorf set the error of the Cache by given string format
+func (ac *Cache) SetErrorf(format string, a ...interface{}) *Cache {
 	var err error
 	if len(a) > 0 {
 		err = fmt.Errorf(format, a...)

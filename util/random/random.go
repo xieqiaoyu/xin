@@ -2,6 +2,7 @@
 package random
 
 import (
+	cryptoRand "crypto/rand"
 	"math/rand"
 	"strings"
 	"time"
@@ -65,4 +66,14 @@ func String(length int) string {
 		leftLen -= letterIdxBits
 	}
 	return sb.String()
+}
+
+//Bytes generate random bytes
+func Bytes(length int) []byte {
+	k := make([]byte, length)
+	if _, err := cryptoRand.Read(k); err != nil {
+		//TODO: does err should trigger panic ?
+		return nil
+	}
+	return k
 }
