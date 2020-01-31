@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"encoding/base64"
-	"strconv"
+	//"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -16,9 +16,8 @@ type HTTPBasicAuthVerifyFunc func(string, string) (pass bool, user interface{})
 // 需要传入一个认证函数来实现函数的认证
 // 这个中间键应该放在渲染中间键之后
 func HTTPBasicAuth(verifyFunc HTTPBasicAuthVerifyFunc) gin.HandlerFunc {
-	//TODO: 把两个语句合并
-	realm := "Authorization Required"
-	realm = "Basic realm=" + strconv.Quote(realm)
+	//alert := "Authorization Required"
+	//realm := "Basic realm=" + strconv.Quote(alert)
 	// 解析header 的正则对象
 	return func(c *gin.Context) {
 		var userName, userPass string
@@ -34,7 +33,7 @@ func HTTPBasicAuth(verifyFunc HTTPBasicAuthVerifyFunc) gin.HandlerFunc {
 		}
 		pass, user := verifyFunc(userName, userPass)
 		if !pass {
-			/*当返回这个值的时候浏览器会默认弹出一个密码框，非常影响体验，暂时先不返回*/
+			//当返回这个值的时候浏览器会默认弹出一个密码框，非常影响体验，暂时先不返回
 			//c.Header("WWW-Authenticate", realm)
 			// 设置http 401 错误
 			c.Set(api.StatusKey, 401)

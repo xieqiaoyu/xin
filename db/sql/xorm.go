@@ -6,21 +6,27 @@ import (
 	"xorm.io/xorm"
 )
 
-const logEnableKey = "sql_enable_log"
+//XormConfig config support xorm setting
+type XormConfig interface {
+	Config
+	EnableDbLog() bool
+}
 
-func (s *Service) newXormEngine(driverName, dataSourceName string) (engine interface{}, err error) {
-	e, err := xorm.NewEngine(driverName, dataSourceName)
-	if err != nil {
-		return nil, xin.NewWrapEf("Fail to new xorm database engine driver [%s] source [%s], Err:%w", driverName, dataSourceName, err)
+func newXormEngineHandler(config XormConfig) GenEngineFunc {
+	return func(driverName, dataSourceName string) (engine interface{}, err error) {
+		e, err := xorm.NewEngine(driverName, dataSourceName)
+		if err != nil {
+			return nil, xin.NewWrapEf("Fail to new xorm database engine driver [%s] source [%s], Err:%w", driverName, dataSourceName, err)
 
+		}
+
+		logEnable := config.EnableDbLog()
+		if logEnable {
+			e.ShowSQL(true)
+			//engine.Logger().SetLevel(core.LOG_DEBUG)
+		}
+		return e, nil
 	}
-
-	logEnable := s.config.EnableDbLog()
-	if logEnable {
-		e.ShowSQL(true)
-		//engine.Logger().SetLevel(core.LOG_DEBUG)
-	}
-	return e, nil
 }
 
 func closeXormEngine(engine interface{}) error {
@@ -31,9 +37,23 @@ func closeXormEngine(engine interface{}) error {
 	return e.Close()
 }
 
-//XormEngine load an xorm engine by id
-func (s *Service) XormEngine(id string) (engine *xorm.Engine, err error) {
-	e, err := s.Engine(id, s.newXormEngine, closeXormEngine)
+//XormService xorm engine service
+type XormService struct {
+	*Service
+	config XormConfig
+}
+
+//NewXormService NewXormService
+func NewXormService(config XormConfig) *XormService {
+	return &XormService{
+		config:  config,
+		Service: NewService(config, newXormEngineHandler(config), closeXormEngine),
+	}
+}
+
+//Engine load an xorm engine by id
+func (s *XormService) Engine(id string) (engine *xorm.Engine, err error) {
+	e, err := s.Get(id)
 	if err != nil {
 		return nil, err
 	}
@@ -44,22 +64,13 @@ func (s *Service) XormEngine(id string) (engine *xorm.Engine, err error) {
 	return engine, nil
 }
 
-//XormSession  load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
-func (s *Service) XormSession(id string, dbInf xorm.Interface) (session *xorm.Session, isNew bool, err error) {
-	if dbInf == nil {
-		engine, err := s.XormEngine(id)
-		if err != nil {
-			return nil, false, err
-		}
-		return engine.NewSession(), true, nil
+//Session  load session by id if giving inf is nil ,if isNew is true caller  should close session after everything is done
+func (s *XormService) Session(id string) (session *xorm.Session, err error) {
+	engine, err := s.Engine(id)
+	if err != nil {
+		return nil, err
 	}
-	switch i := dbInf.(type) {
-	case *xorm.Engine:
-		return i.NewSession(), true, nil
-	case *xorm.Session:
-		return i, false, nil
-	}
-	return nil, false, xin.WrapEf(&xin.InternalError{}, "Unknown xorm interface type %T", dbInf)
+	return engine.NewSession(), nil
 
 }
 

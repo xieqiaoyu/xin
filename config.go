@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	xjsonschema "github.com/xieqiaoyu/xin/util/jsonschema"
+	"strings"
 )
 
 //ConfigLoader load config interface
@@ -23,7 +24,7 @@ type FileConfigLoader struct {
 	ConfigType string
 }
 
-//LoadConfig ConfigLoader interface
+//LoadConfig ConfigLoader implement
 func (l *FileConfigLoader) LoadConfig(vc *viper.Viper) error {
 	if l.ConfigType != "" {
 		vc.SetConfigType(l.ConfigType)
@@ -41,6 +42,39 @@ func (l *FileConfigLoader) LoadConfig(vc *viper.Viper) error {
 		return fmt.Errorf("Fatal error load config file: %w", err)
 	}
 	return nil
+}
+
+//NewFileConfigLoader create a new file config loader
+func NewFileConfigLoader(filename, configType string) *FileConfigLoader {
+	return &FileConfigLoader{
+		FileName:   filename,
+		ConfigType: configType,
+	}
+}
+
+//StringConfigLoader load config from string
+type StringConfigLoader struct {
+	Str        string
+	ConfigType string
+}
+
+//LoadConfig ConfigLoader implement
+func (l *StringConfigLoader) LoadConfig(vc *viper.Viper) error {
+	if l.ConfigType != "" {
+		vc.SetConfigType(l.ConfigType)
+	} else {
+		vc.SetConfigType("toml")
+	}
+	vc.ReadConfig(strings.NewReader(l.Str))
+	return nil
+}
+
+//NewStringConfigLoader NewStringConfigLoader
+func NewStringConfigLoader(str, configType string) *StringConfigLoader {
+	return &StringConfigLoader{
+		Str:        str,
+		ConfigType: configType,
+	}
 }
 
 //JSONSchemaConfigVerifier verfiy config by jsonschema
@@ -69,14 +103,6 @@ func (jv JSONSchemaConfigVerifier) VerfiyConfig(vc *viper.Viper) error {
 func NewJSONSchemaConfigVerifier(schema string) *JSONSchemaConfigVerifier {
 	return &JSONSchemaConfigVerifier{
 		Schema: schema,
-	}
-}
-
-//NewFileConfigLoader create a new file config loader
-func NewFileConfigLoader(filename, configType string) *FileConfigLoader {
-	return &FileConfigLoader{
-		FileName:   filename,
-		ConfigType: configType,
 	}
 }
 
@@ -145,6 +171,15 @@ func (c *Config) GetPostgreSource(id string) (string, error) {
 
 	}
 	return dbSource, nil
+}
+
+//GetSQLSource get driver and source string for sql connection
+func (c *Config) GetSQLSource(id string) (driver string, source string, err error) {
+	source, err = c.GetPostgreSource(id)
+	if err != nil {
+		return "", "", err
+	}
+	return "postgres", source, nil
 }
 
 //GetRedisURI get redis connect string
