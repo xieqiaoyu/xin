@@ -148,3 +148,10 @@ func NewWrappers() Wrappers {
 		WrapperDefaultKey: SimpleJSONWrapper(),
 	}
 }
+
+// XinRESTfulWrap create a WrapAPI middleware with XinRESTfulWrapper as default wrapper
+func XinRESTfulWrap(env xin.Envirment) gin.HandlerFunc {
+	wrappers := NewWrappers()
+	wrappers.SetDefault(XinRESTfulWrapper(env))
+	return WrapAPI(wrappers)
+}

@@ -162,24 +162,26 @@ func (c *Config) EnableDbLog() bool {
 	return c.viper.GetBool("database_enable_log")
 }
 
-//GetPostgreSource get source string for postgresql
-func (c *Config) GetPostgreSource(id string) (string, error) {
-	connectionSourceKey := fmt.Sprintf("%s.%s", "database_connections", id)
-	dbSource := c.viper.GetString(connectionSourceKey)
-	if dbSource == "" {
-		return "", WrapEf(&InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
-
-	}
-	return dbSource, nil
-}
-
 //GetSQLSource get driver and source string for sql connection
 func (c *Config) GetSQLSource(id string) (driver string, source string, err error) {
-	source, err = c.GetPostgreSource(id)
-	if err != nil {
-		return "", "", err
+	connectionPrefix := fmt.Sprintf("%s.%s", "db", id)
+	connectionDriverKey := fmt.Sprintf("%s.%s", connectionPrefix, "driver")
+	driver = c.viper.GetString(connectionDriverKey)
+	if driver == "" {
+		// fallback to general driver setting
+		driver = c.viper.GetString("db.driver")
+		if driver == "" {
+			return "", "", WrapEf(&InternalError{}, "Fail to get database driver, please check config key %s in %s", connectionDriverKey, c.viper.ConfigFileUsed())
+		}
 	}
-	return "postgres", source, nil
+
+	connectionSourceKey := fmt.Sprintf("%s.%s", connectionPrefix, "source")
+	source = c.viper.GetString(connectionSourceKey)
+	if source == "" {
+		return "", "", WrapEf(&InternalError{}, "Fail to get database source string, please check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
+
+	}
+	return driver, source, nil
 }
 
 //GetRedisURI get redis connect string

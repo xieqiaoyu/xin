@@ -77,7 +77,7 @@ $ go run example.go http
 
 ## Getting Start
 
-#### Installation
+### Installation
 
 xin require go 1.13+
 
@@ -242,21 +242,116 @@ func NewServer(env xin.Envirment, config ServerConfig, service Service) *Server
 
 Interface `Service`  register router and middleware into gin engine, you should implement your own service to complete the app. 
 
-env and config are all interface too , you can implement your own ,or you can use `xin.EnvSetting` and `xin.Config` directly
+`xin.Envirment` and `ServerConfig` are interface too , you can implement your own ,or you can use `xin.EnvSetting` and `xin.Config` directly
 
-see [demo](#http-server-service) as an example usage
+ [demo](#http-server-service) is  an usage example
 
-##### middlewares and tools for RESTful api
+##### middlewares and tools for RESTful API
 
 gin has already provide a good RESTful api develop experience , still we have to  deal  some annoying things
 
 xin provide some handy middlewares and tools to make life easier
 
-###### api response status
+
+
+###### *API response status*
+
+http status code often unable to meet our needs for api response status，for many times we need to give more detailed error code to let our client be able to handle subsequent logic
+
+xin provide a solution to this scenario:
+
+All api response body will return a status code and an optional error message like this
+
+```json
+// return with http code 200
+{
+  "status": 200
+  ...
+}
+```
+
+```json
+// return with http code 400
+{
+  "status": 1400,
+  "err_msg":"Bad api call"
+  ...
+}
+```
+
+we stipulate http code equal to status code mod 1000 ( status%1000 )
+
+for example,  we can have api return status code 1400、 2400、11400 ... with http code 400 (Bad Request)  or 1403,5403 ... with http code 403(Forbidden)
+
+To enable this feature in xin , first you should use  `WrapAPI` middleware in service `RegisterRouter`   
+
+```go
+import (
+  "github.com/gin-gonic/gin"
+  mw "github.com/xieqiaoyu/xin/http/api/middleware"
+  "github.com/xieqiaoyu/xin"
+)
+type HttpDemoService struct{
+   Env     xin.Envirment
+}
+func (s *HttpDemoService) RegisterRouter(e *gin.Engine) {
+    e.Use(gin.Logger(), gin.Recovery())
+
+    wrapAPIMiddleware := mw.XinRESTfulWrap(s.Env)
+  
+    e.GET("/ping",wrapAPIMiddleware,PingHandle)
+    e.GET("/pingerror",wrapAPIMiddleware,PingErrorHandle)
+    
+}
+func PingHandle(c *gin.Context) {
+  ...
+}
+func PingErrorHandle(c *gin.Context) {
+  ...
+}
+```
+
+then you can write api handle in this form
+
+```go
+import (
+  "github.com/gin-gonic/gin"
+  "github.com/xieqiaoyu/xin/http/api"
+)
+func PingHandle(c *gin.Context) {
+    api.SetStatus(1200).SetData(gin.H{
+        "message": "pong",
+    }).Apply(c)
+    return
+}
+
+func PingErrorHandle(c *gin.Context) {
+     api.SetStatus(1400).SetErrorf("A Bad Request").Apply(c)
+     return
+}
+```
 
 
 
-###### api authroization 
+you will get this respone when you run the demo
+
+```bash
+# curl localhost:8080/ping
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Sun, 02 Feb 2020 09:52:01 GMT
+Content-Length: 32
+
+{"message":"pong","status":1200}
+
+# curl -i localhost:8080/pingerror
+HTTP/1.1 400 Bad Request
+Content-Type: application/json; charset=utf-8
+Date: Sun, 02 Feb 2020 09:58:27 GMT
+Content-Length: 41
+
+{"status":1400,"err_msg":"A Bad Request"}
+```
 
 
 
