@@ -6,7 +6,7 @@
 
 Xin is a framework focus on building configurable server service easily
 
-It is based on many other fantastic repo,thanks for their author's work!
+It use many other fantastic repo as low-level implementation ,thanks for their author's work!
 
 ## At a glance
 
@@ -216,7 +216,7 @@ You need to provide a function to tell xin how to get the http server , **beware
 
 #### Using xin http Server
 
-Xin has an  `ServerInterface` implementation : `xin/http.Server` , it use [gin](https://github.com/gin-gonic/gin) as a Low-level implementation
+Xin has an  `ServerInterface` implementation : `xin/http.Server` , it use [gin](https://github.com/gin-gonic/gin) as a low-level implementation
 
 ```go
 //package github.com/xieqiaoyu/xin/http
@@ -333,7 +333,7 @@ func PingErrorHandle(c *gin.Context) {
 
 
 
-you will get this respone when you run the demo
+the api respone should be
 
 ```bash
 # curl localhost:8080/ping
@@ -356,4 +356,64 @@ Content-Length: 41
 
 
 ### Database
+
+> Management of database connection config is one of my original intentions to develop xin,but it's not very ideal for now。
+>
+> I failed to design a  proper interface that can adapt all sql driver
+>
+> Let's take  [xorm](https://xorm.io/) which is  used default by xin as an example to introduce how to use `xin.Config` for database connection management
+
+Assume we have two postgresql connection foo and bar in following config.toml
+
+```toml
+[db]
+    driver = "postgres"
+    enable_log = true
+    [db.foo]
+        source = "host=foo.postgresql.url port=5432 user=FOODBADMIN dbname=FOODB password=FOOPASSWD sslmode=disable"
+    [db.bar]
+        source = "host=bar.postgresql.url port=5432 user=BARDBADMIN dbname=BARDB password=BARPASSWD sslmode=disable"
+```
+
+Use xorm sql service 
+
+```go
+package main
+
+import (
+    "github.com/xieqiaoyu/xin"
+    db "github.com/xieqiaoyu/xin/db/sql"
+)
+func main() {
+    // init config
+    configLoader := xin.NewFileConfigLoader("config.toml", "toml")
+    config := xin.NewConfig(configLoader, nil)
+    config.Init()
+  
+    // init xorm service
+    xorm := db.NewXormService(config)
+    // singleton load xorm engine of connection foo 
+    fooDBEngine,err := xorm.Engine("foo")
+    if err != nil {
+        panic(err)
+    }
+    // fooDBEngine is an opened xorm.Engine 
+    err = fooDBEngine.Ping()
+    if err != nil {
+        panic(err)
+    }
+    /*
+    
+    // singleton load xorm engine of connection bar
+    barDBEngine,err := xorm.Engine("bar")
+    if err != nil {
+        panic(err)
+    }
+    var sliceOfStructs []Struct
+    err := barDBEngine.Find(&sliceOfStructs)
+    
+    */
+    
+}
+```
 

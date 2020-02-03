@@ -159,7 +159,7 @@ func (c *Config) Env() string {
 
 //EnableDbLog get config for enable db Log
 func (c *Config) EnableDbLog() bool {
-	return c.viper.GetBool("database_enable_log")
+	return c.viper.GetBool("db.enable_log")
 }
 
 //GetSQLSource get driver and source string for sql connection
