@@ -2,65 +2,8 @@ package log
 
 import (
 	"fmt"
-	"log"
 	"runtime"
-	"time"
 )
-
-type logLevel interface {
-	GetCode() int
-	GetLiteral() string
-}
-
-var levelLiteral = map[int]string{
-	int(Debug):     "Debug",
-	int(Info):      "Info",
-	int(Notice):    "Notice",
-	int(Warning):   "Warning",
-	int(Error):     "Error",
-	int(Critical):  "Critical",
-	int(Alert):     "Alert",
-	int(Emergency): "Emergency",
-}
-
-//RFC5424SeverityLevel  RFC5424SeverityLevel
-type RFC5424SeverityLevel int
-
-//GetCode logLevel interface
-func (s RFC5424SeverityLevel) GetCode() int {
-	return int(s)
-}
-
-//GetLiteral logLevel interface
-func (s RFC5424SeverityLevel) GetLiteral() string {
-	if literal, ok := levelLiteral[int(s)]; ok {
-		return literal
-	}
-	return "Unknown"
-}
-
-var _ logLevel = RFC5424SeverityLevel(0)
-
-// predefine log level
-const (
-	Debug     RFC5424SeverityLevel = 7
-	Info      RFC5424SeverityLevel = 6
-	Notice    RFC5424SeverityLevel = 5
-	Warning   RFC5424SeverityLevel = 4
-	Error     RFC5424SeverityLevel = 3
-	Critical  RFC5424SeverityLevel = 2
-	Alert     RFC5424SeverityLevel = 1
-	Emergency RFC5424SeverityLevel = 0
-)
-
-// Log Log struct
-type Log struct {
-	Level logLevel
-	Tag   string
-	Msg   string
-	File  string
-	Line  int
-}
 
 //WithTag new Log with tag
 func WithTag(tag string) *Log {
@@ -69,137 +12,134 @@ func WithTag(tag string) *Log {
 	}
 }
 
-//WriteDebug WriteDebug
-func WriteDebug(format string, v ...interface{}) {
-	Write(Debug, true, format, v...)
+//Log one line log
+type Log struct {
+	Level  LogLevel
+	Tag    string
+	Msg    string
+	Caller *Caller
 }
 
-//WriteDebug WriteDebug
-func (l *Log) WriteDebug(format string, v ...interface{}) {
-	l.Write(Debug, true, format, v...)
+//Caller where the log is call from
+type Caller struct {
+	File string
+	Line int
 }
 
-//WriteInfo WriteInfo
-func WriteInfo(format string, v ...interface{}) {
-	Write(Info, false, format, v...)
+//Debugf Debugf
+func Debugf(format string, v ...interface{}) {
+	Write(Debug, 2, true, format, v...)
 }
 
-//WriteInfo WriteInfo
-func (l *Log) WriteInfo(format string, v ...interface{}) {
-	l.Write(Info, false, format, v...)
+//Debugf Debugf
+func (l *Log) Debugf(format string, v ...interface{}) {
+	l.Write(Debug, 2, true, format, v...)
 }
 
-//WriteNotice WriteNotice
-func WriteNotice(format string, v ...interface{}) {
-	Write(Notice, true, format, v...)
+//Infof Infof
+func Infof(format string, v ...interface{}) {
+	Write(Info, 2, false, format, v...)
 }
 
-//WriteNotice WriteNotice
-func (l *Log) WriteNotice(format string, v ...interface{}) {
-	l.Write(Notice, true, format, v...)
+//Infof Infof
+func (l *Log) Infof(format string, v ...interface{}) {
+	l.Write(Info, 2, false, format, v...)
 }
 
-//WriteWarning WriteWarning
-func WriteWarning(format string, v ...interface{}) {
-	Write(Warning, true, format, v...)
+//Noticef Noticef
+func Noticef(format string, v ...interface{}) {
+	Write(Notice, 2, false, format, v...)
 }
 
-//WriteWarning WriteWarning
-func (l *Log) WriteWarning(format string, v ...interface{}) {
-	l.Write(Warning, true, format, v...)
+//Noticef Noticef
+func (l *Log) Noticef(format string, v ...interface{}) {
+	l.Write(Notice, 2, false, format, v...)
 }
 
-//WriteError WriteError
-func WriteError(format string, v ...interface{}) {
-	Write(Error, true, format, v...)
+//Warningf Warningf
+func Warningf(format string, v ...interface{}) {
+	Write(Warning, 2, true, format, v...)
 }
 
-//WriteError WriteError
-func (l *Log) WriteError(format string, v ...interface{}) {
-	l.Write(Error, true, format, v...)
+//Warningf Warningf
+func (l *Log) Warningf(format string, v ...interface{}) {
+	l.Write(Warning, 2, true, format, v...)
 }
 
-//WriteCritical WriteCritical
-func WriteCritical(format string, v ...interface{}) {
-	Write(Critical, true, format, v...)
+//Errorf Errorf
+func Errorf(format string, v ...interface{}) {
+	Write(Error, 2, true, format, v...)
 }
 
-//WriteCritical WriteCritical
-func (l *Log) WriteCritical(format string, v ...interface{}) {
-	l.Write(Critical, true, format, v...)
+//Errorf Errorf
+func (l *Log) Errorf(format string, v ...interface{}) {
+	l.Write(Error, 2, true, format, v...)
 }
 
-//WriteAlert WriteAlert
-func WriteAlert(format string, v ...interface{}) {
-	Write(Alert, true, format, v...)
+//Criticalf Criticalf
+func Criticalf(format string, v ...interface{}) {
+	Write(Critical, 2, true, format, v...)
 }
 
-//WriteAlert WriteAlert
-func (l *Log) WriteAlert(format string, v ...interface{}) {
-	l.Write(Alert, true, format, v...)
+//Criticalf Criticalf
+func (l *Log) Criticalf(format string, v ...interface{}) {
+	l.Write(Critical, 2, true, format, v...)
 }
 
-//WriteEmergency WriteEmergency
-func WriteEmergency(format string, v ...interface{}) {
-	Write(Emergency, true, format, v...)
+//Alertf Alertf
+func Alertf(format string, v ...interface{}) {
+	Write(Alert, 2, true, format, v...)
 }
 
-//WriteEmergency WriteEmergency
-func (l *Log) WriteEmergency(format string, v ...interface{}) {
-	l.Write(Emergency, true, format, v...)
+//Alertf Alertf
+func (l *Log) Alertf(format string, v ...interface{}) {
+	l.Write(Alert, 2, true, format, v...)
+}
+
+//Emergencyf Emergencyf
+func Emergencyf(format string, v ...interface{}) {
+	Write(Emergency, 2, true, format, v...)
+}
+
+//Emergencyf Emergencyf
+func (l *Log) Emergencyf(format string, v ...interface{}) {
+	l.Write(Emergency, 2, true, format, v...)
 }
 
 //Write write log
-func (l Log) Write(level logLevel, trace bool, format string, v ...interface{}) {
-	var file string
-	var line int
-	if trace {
-		// 这里需要判断调用的层级关系,否则直接调用Write 报错位置是错误的
-		// TODO:应该想办法通过包名来判断是否,而且最好从2开始倒着遍历效率更高
-		_, currentfile, _, _ := runtime.Caller(0)
-		for i := 1; i < 3; i++ {
-			_, file, line, _ = runtime.Caller(i)
-			if file != currentfile {
-				break
-			}
-		}
-		l.File = file
-		l.Line = line
-	}
+func (l Log) Write(level LogLevel, calldepth int, trace bool, format string, v ...interface{}) {
 	l.Level = level
 	l.Msg = fmt.Sprintf(format, v...)
-	doWrite(&l, trace)
+	if trace {
+		_, file, line, ok := runtime.Caller(calldepth)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		l.Caller = &Caller{
+			File: file,
+			Line: line,
+		}
+	}
+	std.Output(&l)
 }
 
 //Write write log
-func Write(level logLevel, trace bool, format string, v ...interface{}) {
-	var file string
-	var line int
-	if trace {
-		// 这里需要判断调用的层级关系,否则直接调用Write 报错位置是错误的
-		// TODO:应该想办法通过包名来判断是否,而且最好从2开始倒着遍历效率更高
-		_, currentfile, _, _ := runtime.Caller(0)
-		for i := 1; i < 3; i++ {
-			_, file, line, _ = runtime.Caller(i)
-			if file != currentfile {
-				break
-			}
-		}
-	}
+func Write(level LogLevel, calldepth int, trace bool, format string, v ...interface{}) {
 	l := &Log{
 		Level: level,
 		Msg:   fmt.Sprintf(format, v...),
-		File:  file,
-		Line:  line,
 	}
-	doWrite(l, trace)
-}
-
-//doWrite do log write action
-func doWrite(l *Log, trace bool) {
 	if trace {
-		log.Println(fmt.Sprintf("%s [%s] [%s] %s --- %s:%d", time.Now().Format(time.RFC3339), l.Level.GetLiteral(), l.Tag, l.Msg, l.File, l.Line))
-	} else {
-		log.Println(fmt.Sprintf("%s [%s] [%s] %s", time.Now().Format(time.RFC3339), l.Level.GetLiteral(), l.Tag, l.Msg))
+		_, file, line, ok := runtime.Caller(calldepth)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		l.Caller = &Caller{
+			File: file,
+			Line: line,
+		}
 	}
+	std.Output(l)
 }

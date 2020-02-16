@@ -6,7 +6,7 @@
 
 Xin is a framework focus on building configurable server service easily
 
-It use many other fantastic repo as low-level implementation ,thanks for their author's work!
+It relies on many other fantastic repo as low-level implementation ,thanks for their author's work!
 
 ## At a glance
 
@@ -362,6 +362,8 @@ Content-Length: 41
 > I failed to design a  proper interface that can adapt all sql driver
 >
 > Let's take  [xorm](https://xorm.io/) which is  used default by xin as an example to introduce how to use `xin.Config` for database connection management
+
+*Notice:*  following example need build tag `usexorm`   : `go run -tags=usexorm example.go`
 
 Assume we have two postgresql connection foo and bar in following config.toml
 

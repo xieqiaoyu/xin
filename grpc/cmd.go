@@ -29,36 +29,36 @@ func NewGrpcCmd(getServer InitializeServerFunc) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			server, err := getServer()
 			if err != nil {
-				xlog.WriteError("Init server fail %s", err)
+				xlog.Errorf("Init server fail %s", err)
 				os.Exit(1)
 			}
 
 			s, err := server.GetGrpcServer()
 			if err != nil {
-				xlog.WriteError("Get Gprc server fail %s", err)
+				xlog.Errorf("Get Gprc server fail %s", err)
 				os.Exit(1)
 			}
 			lis, err := server.GetNetListener()
 			if err != nil {
-				xlog.WriteError("Get Gprc net listener fail %s", err)
+				xlog.Errorf("Get Gprc net listener fail %s", err)
 				os.Exit(1)
 			}
 			addr := lis.Addr()
 
 			go func() {
-				xlog.WriteInfo("Grpc server working on %s/%s", addr.Network(), addr.String())
+				xlog.Infof("Grpc server working on %s/%s", addr.Network(), addr.String())
 				err := s.Serve(lis)
 				if err != nil {
-					xlog.WriteError("%s", err)
+					xlog.Errorf("%s", err)
 					os.Exit(1)
 				}
 			}()
 
 			xin.WaitForQuitSignal()
 
-			xlog.WriteInfo("Shutdown Server ...")
+			xlog.Infof("Shutdown Server ...")
 			s.GracefulStop()
-			xlog.WriteInfo("Server exited")
+			xlog.Infof("Server exited")
 		},
 	}
 }

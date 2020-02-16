@@ -1,3 +1,5 @@
+//+build usexorm
+
 package sql
 
 import (

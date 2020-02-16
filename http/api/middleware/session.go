@@ -29,7 +29,7 @@ func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 				// 出错和未找到的情况均将session id 置空
 				sessionID = ""
 				if err != nil {
-					xlog.WriteError("Load session err:%s", err)
+					xlog.Errorf("Load session err:%s", err)
 				}
 			}
 		}
@@ -45,13 +45,13 @@ func Session(name string, handler xsession.Handler) gin.HandlerFunc {
 					}
 					ttl, err := handler.Save(sessionID, newSession)
 					if err != nil {
-						xlog.WriteError("Save session err:%s", err)
+						xlog.Errorf("Save session err:%s", err)
 					} else {
 						host := c.GetHeader("Host")
 						c.SetCookie(name, sessionID, ttl, "", host, false, true)
 					}
 				} else {
-					xlog.WriteWarning("session in context type is %v not a session interface, url:%s", session, c.Request.URL)
+					xlog.Warningf("session in context type is %v not a session interface, url:%s", session, c.Request.URL)
 				}
 			}
 		}

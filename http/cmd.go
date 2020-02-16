@@ -27,7 +27,7 @@ func NewHTTPCmd(getServer InitializeServerFunc) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			server, err := getServer()
 			if err != nil {
-				xlog.WriteError("Init server fail %s", err)
+				xlog.Errorf("Init server fail %s", err)
 				os.Exit(1)
 			}
 			httpServer := server.GetHTTPServer()
@@ -37,23 +37,23 @@ func NewHTTPCmd(getServer InitializeServerFunc) *cobra.Command {
 				addr = ":http"
 			}
 
-			xlog.WriteInfo("Http server working on %s", addr)
+			xlog.Infof("Http server working on %s", addr)
 			go func() {
 				if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-					xlog.WriteError("Ooops! %s", err)
+					xlog.Errorf("Ooops! %s", err)
 					os.Exit(1)
 				}
 			}()
 
 			xin.WaitForQuitSignal()
 
-			xlog.WriteInfo("Shutdown Server ...")
+			xlog.Infof("Shutdown Server ...")
 			ctx := context.Background()
 			if err := httpServer.Shutdown(ctx); err != nil {
-				xlog.WriteError("Server Shutdown: %s", err)
+				xlog.Errorf("Server Shutdown: %s", err)
 				os.Exit(1)
 			}
-			xlog.WriteInfo("Server exited")
+			xlog.Infof("Server exited")
 		},
 	}
 }
