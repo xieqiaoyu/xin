@@ -9,7 +9,7 @@ import (
 //Service http service interface
 type Service interface {
 	// register route and middleware into gin engine
-	RegisterRouter(*gin.Engine)
+	RegisterRouter(*gin.Engine) error
 }
 
 //Server  Http server implement ServerInterface
@@ -25,7 +25,7 @@ type ServerConfig interface {
 }
 
 //GetHTTPServer ServerInterface implement
-func (s *Server) GetHTTPServer() *http.Server {
+func (s *Server) GetHTTPServer() (*http.Server, error) {
 	addr := s.config.HTTPListen()
 	if addr == "" {
 		addr = ":8080"
@@ -42,13 +42,16 @@ func (s *Server) GetHTTPServer() *http.Server {
 	gin.SetMode(mode)
 	r := gin.New()
 	if s.service != nil {
-		s.service.RegisterRouter(r)
+		err := s.service.RegisterRouter(r)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &http.Server{
 		Addr:    addr,
 		Handler: r,
-	}
+	}, nil
 }
 
 //NewServer Create a new HTTP server

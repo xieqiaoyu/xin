@@ -12,7 +12,7 @@ import (
 //ServerInterface a server can provide http server
 type ServerInterface interface {
 	// provide the http server service
-	GetHTTPServer() *http.Server
+	GetHTTPServer() (*http.Server, error)
 }
 
 //InitializeServerFunc function init http Server  gives the posibility for dependence inject
@@ -30,7 +30,11 @@ func NewHTTPCmd(getServer InitializeServerFunc) *cobra.Command {
 				xlog.Errorf("Init server fail %s", err)
 				os.Exit(1)
 			}
-			httpServer := server.GetHTTPServer()
+			httpServer, err := server.GetHTTPServer()
+			if err != nil {
+				xlog.Errorf("Fail to get http Server : %s", err)
+				return
+			}
 
 			addr := httpServer.Addr
 			if addr == "" {

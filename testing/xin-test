@@ -9,7 +9,12 @@ if [ -e "$projectBase/test_base.sh" ]; then
 fi
 
 echo "building.."
-GOOS=linux go test -c -o "${testBin}" || exit
+
+cmd="GOOS=linux go test \"${buildArgs}\" -c -o \"${testBin}\""
+set -x
+eval "$cmd" || exit
+set +x
+
 
 echo "run test.."
 

@@ -38,7 +38,7 @@ env = "dev"
 type HttpDemoService struct{}
 
 //RegisterRouter xhttp.ServerInterface implement
-func (s *HttpDemoService) RegisterRouter(e *gin.Engine) {
+func (s *HttpDemoService) RegisterRouter(e *gin.Engine) error {
     e.Use(gin.Logger(), gin.Recovery())
 
     e.GET("/ping", func(c *gin.Context) {
@@ -46,6 +46,7 @@ func (s *HttpDemoService) RegisterRouter(e *gin.Engine) {
             "message": "pong",
         })
     })
+    return nil
 }
 
 //InitializeHTTPServer define an instance of  xhttp.InitializeServerFunc
@@ -229,7 +230,7 @@ import (
 //Service http service interface
 type Service interface {
     // register route and middleware into gin engine
-    RegisterRouter(*gin.Engine)
+    RegisterRouter(*gin.Engine) error
 }
 //ServerConfig config provide HTTP server setting
 type ServerConfig interface {
@@ -283,7 +284,7 @@ we stipulate http code equal to status code mod 1000 ( status%1000 )
 
 for example,  we can have api return status code 1400、 2400、11400 ... with http code 400 (Bad Request)  or 1403,5403 ... with http code 403(Forbidden)
 
-To enable this feature in xin , first you should use  `WrapAPI` middleware in service `RegisterRouter`   
+To enable this feature in xin , first you should use  `WrapAPI` middleware in service `RegisterRouter`
 
 ```go
 import (
@@ -294,14 +295,14 @@ import (
 type HttpDemoService struct{
    Env     xin.Envirment
 }
-func (s *HttpDemoService) RegisterRouter(e *gin.Engine) {
+func (s *HttpDemoService) RegisterRouter(e *gin.Engine) error {
     e.Use(gin.Logger(), gin.Recovery())
 
     wrapAPIMiddleware := mw.XinRESTfulWrap(s.Env)
-  
+
     e.GET("/ping",wrapAPIMiddleware,PingHandle)
     e.GET("/pingerror",wrapAPIMiddleware,PingErrorHandle)
-    
+    return nil
 }
 func PingHandle(c *gin.Context) {
   ...
