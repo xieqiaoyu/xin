@@ -41,7 +41,7 @@ func CheckReqJSON(c *gin.Context, schemaStr string, obj interface{}) (bool, erro
 	err := verifyAndUnmarshalReqestBodyAsJSON(c, schemaStr, obj)
 	if err != nil {
 		//TODO:目前认为context 直接在这个地方abort 不太好，这样函数就被限制得太死了
-		SetErrorf("Check JSON err: %w", err).Apply(c)
+		SetStatus(400).SetErrorf("Check JSON err: %w", err).Apply(c)
 		return false, err
 	}
 	return true, nil

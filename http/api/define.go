@@ -14,7 +14,7 @@ const (
 	//WrapperIndex 指定api 使用的wrapper 逻辑
 	WrapperIndex = "xinWrapperIndex"
 	//ErrorStatusDefault api handle 未定义status 时返回的默认失败值
-	ErrorStatusDefault = 400
+	ErrorStatusDefault = 500
 	//UserKey api 保存的用户对象的key
 	UserKey = "xinUser"
 	//JWTTokenKey context 中保存jwt-go token 对象的key
