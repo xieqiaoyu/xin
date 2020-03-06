@@ -34,7 +34,7 @@ func (s *Service) Engine(id string) (radix.Client, error) {
 	}
 	redisURI, err := s.config.GetRedisURI(id)
 	if err != nil {
-		return nil, xin.NewWrapE(err)
+		return nil, xin.NewTracedE(err)
 	}
 
 	redisPool, err := radix.NewPool("tcp", redisURI, 10)

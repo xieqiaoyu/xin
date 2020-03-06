@@ -54,16 +54,11 @@ func WrapEf(Err WrapError, format string, a ...interface{}) error {
 	return Err
 }
 
-//NewWrapE @deprecated use NewTracedE instead
-// create a new TracedError and wrap the given error into it
-func NewWrapE(err error) error {
-	e := &TracedError{}
-	e.Wrap(err)
-	return e
-}
-
 //NewTracedE create a new TracedError and wrap the given error into it
 func NewTracedE(err error) error {
+	if err == nil {
+		return nil
+	}
 	e := &TracedError{}
 	e.Wrap(err)
 	return e

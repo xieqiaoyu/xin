@@ -37,7 +37,7 @@ func NewService(config Config, genHandle GenEngineFunc, closeHandle CloseEngineF
 // Get  get sql connect engine
 func (s *Service) Get(id string) (interface{}, error) {
 	if s.genHandle == nil {
-		return nil, xin.NewWrapEf("genHandle can not be nil")
+		return nil, xin.NewTracedEf("genHandle can not be nil")
 	}
 	dbInstance, exists := s.instances.Load(id)
 	if exists {
@@ -46,7 +46,7 @@ func (s *Service) Get(id string) (interface{}, error) {
 
 	sqlDriver, sqlSource, err := s.config.GetSQLSource(id)
 	if err != nil {
-		return nil, xin.NewWrapE(err)
+		return nil, xin.NewTracedE(err)
 	}
 
 	dbInstanceTemp, err := s.genHandle(sqlDriver, sqlSource)
