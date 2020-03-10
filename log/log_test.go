@@ -16,7 +16,7 @@ func BenchmarkGoLogWithTrace(b *testing.B) {
 }
 func BenchmarkWriteErrorWithTrace(b *testing.B) {
 	buf := new(bytes.Buffer)
-	std.SetOutRouter(NewDefaultOutRouter(buf, buf))
+	Std.SetOutRouter(NewDefaultOutRouter(buf, buf))
 	for i := 0; i < b.N; i++ {
 		Write(Error, 1, true, "This is an err :%s", "just for benchemark")
 	}
@@ -32,7 +32,7 @@ func BenchmarkGoLogWithNoTrace(b *testing.B) {
 }
 func BenchmarkWriteErrorWithNoTrace(b *testing.B) {
 	buf := new(bytes.Buffer)
-	std.SetOutRouter(NewDefaultOutRouter(buf, buf))
+	Std.SetOutRouter(NewDefaultOutRouter(buf, buf))
 	for i := 0; i < b.N; i++ {
 		Write(Error, 1, false, "This is an err :%s", "just for benchemark")
 	}

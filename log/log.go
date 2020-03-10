@@ -121,7 +121,7 @@ func (l Log) Write(level LogLevel, calldepth int, trace bool, format string, v .
 			Line: line,
 		}
 	}
-	std.Output(&l)
+	Std.Output(&l)
 }
 
 //Write write log
@@ -141,5 +141,5 @@ func Write(level LogLevel, calldepth int, trace bool, format string, v ...interf
 			Line: line,
 		}
 	}
-	std.Output(l)
+	Std.Output(l)
 }

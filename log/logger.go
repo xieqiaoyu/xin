@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	std = New(nil, nil)
+	Std = New(nil, nil)
 )
 
 // Logger Logger struct
@@ -28,7 +28,6 @@ func (l *Logger) Output(data *Log) (err error) {
 
 	l.buf = l.buf[:0]
 	l.formater.Format(&l.buf, data)
-
 	_, err = output.Write(l.buf)
 	return err
 }
@@ -36,6 +35,11 @@ func (l *Logger) Output(data *Log) (err error) {
 //SetOutRouter set the OutRouter of the logger
 func (l *Logger) SetOutRouter(newout OutRouter) {
 	l.output = newout
+}
+
+// OutRouter get the OutRouter of the logger
+func (l *Logger) OutRouter() OutRouter {
+	return l.output
 }
 
 //New create a new logger

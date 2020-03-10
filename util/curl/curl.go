@@ -38,6 +38,10 @@ func (c *Client) WithBaseURL(baseurl string) error {
 	if err != nil {
 		return err
 	}
+	if urlobj.Path != "" && urlobj.Path[len(urlobj.Path)-1] != '/' {
+		urlobj.Path = urlobj.Path + "/"
+	}
+	//TODO: modify RawPath
 	c.baseURL = urlobj
 	return nil
 }
@@ -46,7 +50,7 @@ func (c *Client) WithBaseURL(baseurl string) error {
 func (c *Client) Fetch(request *Request) (*Response, error) {
 	httpRequest := *request.Raw
 	if c.baseURL != nil {
-		finalURL, _ := c.baseURL.Parse(httpRequest.URL.String())
+		finalURL := c.baseURL.ResolveReference(httpRequest.URL)
 		httpRequest.URL = finalURL
 	}
 	httpResponse, err := c.engine.Do(&httpRequest)
