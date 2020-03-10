@@ -4,6 +4,7 @@ package curl
 import (
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 )
 
@@ -44,6 +45,12 @@ func (c *Client) WithBaseURL(baseurl string) error {
 	//TODO: modify RawPath
 	c.baseURL = urlobj
 	return nil
+}
+
+//EnableCookie let client auto save cookie in every request
+func (c *Client) EnableCookie() {
+	cookieJar, _ := cookiejar.New(nil)
+	c.engine.Jar = cookieJar
 }
 
 //Fetch 执行request 请求
