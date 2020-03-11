@@ -14,6 +14,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.etcd.io/etcd v3.3.17+incompatible
 	google.golang.org/grpc v1.21.0
+	gopkg.in/yaml.v2 v2.2.4
 	sigs.k8s.io/yaml v1.1.0 // indirect
 	xorm.io/core v0.7.2
 	xorm.io/xorm v0.8.0
