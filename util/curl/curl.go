@@ -41,8 +41,10 @@ func (c *Client) WithBaseURL(baseurl string) error {
 	}
 	if urlobj.Path != "" && urlobj.Path[len(urlobj.Path)-1] != '/' {
 		urlobj.Path = urlobj.Path + "/"
+		if urlobj.RawPath != "" {
+			urlobj.RawPath = urlobj.RawPath + "/"
+		}
 	}
-	//TODO: modify RawPath
 	c.baseURL = urlobj
 	return nil
 }
