@@ -38,18 +38,16 @@ func jsonConvert(m interface{}) (interface{}, error) {
 			}
 		}
 		return res, nil
-	/*
-	   case []interface{}:
-	       res := make([]interface{}, len(v))
-	       for i, v2 := range v {
-	           convertv, err := jsonConvert(v2)
-	           if err != nil {
-	               return nil, err
-	           }
-	           res[i] = convertv
-	       }
-	       return res, nil
-	*/
+	case []interface{}:
+		res := make([]interface{}, len(v))
+		for i, v2 := range v {
+			convertv, err := jsonConvert(v2)
+			if err != nil {
+				return nil, err
+			}
+			res[i] = convertv
+		}
+		return res, nil
 	default:
 		return m, nil
 	}
