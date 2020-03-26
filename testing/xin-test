@@ -10,7 +10,7 @@ fi
 
 echo "building.."
 
-cmd="GOOS=linux go test \"${buildArgs}\" -c -o \"${testBin}\""
+cmd="GOOS=linux go test ${buildArgs:-} -c -o \"${testBin}\""
 set -x
 eval "$cmd" || exit
 set +x

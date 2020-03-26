@@ -1,10 +1,9 @@
 package redis
 
 import (
+	"github.com/go-redis/redis/v7"
 	"github.com/xieqiaoyu/xin"
 	"sync"
-
-	"github.com/mediocregopher/radix/v3"
 )
 
 //Config config provide redis connection setting
@@ -18,7 +17,7 @@ type Service struct {
 	config    Config
 }
 
-//NewService create a new radis connect service
+//NewService create a new redis connect service
 func NewService(config Config) *Service {
 	return &Service{
 		instances: new(sync.Map),
@@ -26,24 +25,25 @@ func NewService(config Config) *Service {
 	}
 }
 
-//Engine get radix client by id
-func (s *Service) Engine(id string) (radix.Client, error) {
+//Engine get redis client by id
+func (s *Service) Engine(id string) (*redis.Client, error) {
 	instance, exists := s.instances.Load(id)
 	if exists {
-		return instance.(radix.Client), nil
+		return instance.(*redis.Client), nil
 	}
 	redisURI, err := s.config.GetRedisURI(id)
 	if err != nil {
 		return nil, xin.NewTracedE(err)
 	}
-
-	redisPool, err := radix.NewPool("tcp", redisURI, 10)
+	options, err := redis.ParseURL(redisURI)
 	if err != nil {
-		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to create redis connect pool %w", err)
+		return nil, xin.WrapEf(&xin.InternalError{}, "Fail to parse redis [%s] URL:%s", id, err)
 	}
-	instance, loaded := s.instances.LoadOrStore(id, redisPool)
+	client := redis.NewClient(options)
+
+	instance, loaded := s.instances.LoadOrStore(id, client)
 	if loaded {
-		redisPool.Close()
+		client.Close()
 	}
-	return instance.(radix.Client), nil
+	return instance.(*redis.Client), nil
 }

@@ -1,8 +1,9 @@
 package session
 
 import (
-	"github.com/mediocregopher/radix/v3"
+	"github.com/go-redis/redis/v7"
 	"github.com/xieqiaoyu/xin"
+	"time"
 )
 
 //StorableSessionGenerater StorableSessionGenerater
@@ -11,12 +12,12 @@ type StorableSessionGenerater func() StorableSession
 //Redis  redis session handler
 type Redis struct {
 	TTL              int
-	store            radix.Client
+	store            *redis.Client
 	sessionGenerater StorableSessionGenerater
 }
 
 //NewRedisHandler NewRedisHandler
-func NewRedisHandler(store radix.Client, ttl int, generater StorableSessionGenerater) *Redis {
+func NewRedisHandler(store *redis.Client, ttl int, generater StorableSessionGenerater) *Redis {
 	return &Redis{
 		TTL:              ttl,
 		store:            store,
@@ -29,14 +30,13 @@ func xinSessionGenerater() StorableSession {
 }
 
 //NewXinRedisHandler return a redis handler use xinSession as generater
-func NewXinRedisHandler(store radix.Client, ttl int) *Redis {
+func NewXinRedisHandler(store *redis.Client, ttl int) *Redis {
 	return NewRedisHandler(store, ttl, xinSessionGenerater)
 }
 
 //Load implement Handler
 func (s *Redis) Load(sessionID string) (Session, bool, error) {
-	var raw []byte
-	err := s.store.Do(radix.Cmd(&raw, "GET", sessionID))
+	raw, err := s.store.Get(sessionID).Bytes()
 	if err != nil {
 		return nil, false, err
 	}
@@ -61,9 +61,11 @@ func (s *Redis) Save(sessionID string, session Session) (ttl int, err error) {
 	if !ok {
 		return 0, xin.NewWrapEf("session is not storable")
 	}
+	ttlDuration := time.Duration(ttl) * time.Second
+
 	if !sc.HasNewContent() {
 		// 没有新的内容只做session 的刷新，不创建新内容
-		err = s.store.Do(radix.FlatCmd(nil, "EXPIRE", sessionID, ttl))
+		_, err = s.store.Expire(sessionID, ttlDuration).Result()
 		if err != nil {
 			return 0, err
 		}
@@ -72,7 +74,7 @@ func (s *Redis) Save(sessionID string, session Session) (ttl int, err error) {
 		if err != nil {
 			return 0, err
 		}
-		err = s.store.Do(radix.FlatCmd(nil, "SETEX", sessionID, ttl, sBytes))
+		_, err = s.store.Set(sessionID, sBytes, ttlDuration).Result()
 		if err != nil {
 			return 0, err
 		}
