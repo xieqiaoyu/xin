@@ -65,3 +65,20 @@ func (s *Service) Get(id string) (interface{}, error) {
 
 	return dbInstance, nil
 }
+
+//Close Close all Close in the service
+func (s *Service) Close() error {
+	if s.closeHandle != nil {
+		var err error
+		s.instances.Range(func(key, engine interface{}) bool {
+			s.instances.Delete(key)
+			err = s.closeHandle(engine)
+			if err != nil {
+				return false
+			}
+			return true
+		})
+		return err
+	}
+	return xin.NewTracedEf("No closeHandle to use")
+}
