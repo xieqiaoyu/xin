@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+type HTTPTestCase interface {
+	Run(ctx *HTTPTestContext) error
+}
+
 type HTTPTestContext struct {
 	values            sync.Map
 	defaultCurlClient *curl.Client
@@ -147,6 +151,22 @@ type ApiTestCase struct {
 	Action TestApiAction
 }
 
+func (c *ApiTestCase) Run(ctx *HTTPTestContext) error {
+	if c.Action != nil {
+		req, err := curl.NewRequest(c.Method, c.Path)
+		if err != nil {
+			return err
+		}
+		err = c.Action(ctx, req)
+		if err != nil {
+			return fmt.Errorf("%s %s fail: %s", c.Method, c.Path, err)
+		}
+		return nil
+	} else {
+		return fmt.Errorf("No test action for case %s %s", c.Method, c.Path)
+	}
+}
+
 func NewApiCase(method, path string, action TestApiAction) *ApiTestCase {
 	if action == nil {
 		action = apiDefautAction
@@ -162,6 +182,26 @@ func apiDefautAction(ctx *HTTPTestContext, req *curl.Request) error {
 	assume := ApiAssume().Status(200)
 	_, err := ctx.FetchAndAssume(req, assume)
 	return err
+}
+
+type JobAction func(ctx *HTTPTestContext) error
+
+type JobTestCase struct {
+	action JobAction
+}
+
+func NewJobCase(action JobAction) *JobTestCase {
+	return &JobTestCase{
+		action: action,
+	}
+}
+
+func (c *JobTestCase) Run(ctx *HTTPTestContext) error {
+	if c.action != nil {
+		return c.action(ctx)
+	} else {
+		return fmt.Errorf("No test action for case")
+	}
 }
 
 func RenderReqPath(req *curl.Request, param interface{}) error {
