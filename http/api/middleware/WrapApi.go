@@ -109,11 +109,12 @@ func XinRESTfulWrapper(env xin.Envirment) gin.HandlerFunc {
 				xlog.Warningf("Unexpected ErrMsg type %T", t)
 			}
 			//http 状态码 > 500 在正式环境应该屏蔽错误输出并将错误输入到日志中
-			if (httpStatus >= 500 || isInternalError) && (env.Mode() == xin.ReleaseMode) {
-				//TODO: 更加详细的记录包括请求header 和 body
+			if httpStatus >= 500 || isInternalError {
 				xlog.Errorf("%s return status %d with error message:%s", c.Request.URL.Path, httpStatus, errMsgString)
-			} else {
-				baseResponseObj.ErrMsg = errMsgString
+				if env.Mode() != xin.ReleaseMode {
+					baseResponseObj.ErrMsg = errMsgString
+				}
+				//TODO: 更加详细的记录包括请求header 和 body
 			}
 		}
 
