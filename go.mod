@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.etcd.io/etcd v3.3.17+incompatible
-	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c // indirect
+	go.mongodb.org/mongo-driver v1.3.5
 	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107 // indirect
 	google.golang.org/grpc v1.21.0
 	gopkg.in/yaml.v2 v2.2.4

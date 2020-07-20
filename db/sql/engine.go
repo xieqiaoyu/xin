@@ -66,7 +66,7 @@ func (s *Service) Get(id string) (interface{}, error) {
 	return dbInstance, nil
 }
 
-//Close Close all Close in the service
+//Close Close all connection in the service
 func (s *Service) Close() error {
 	if s.closeHandle != nil {
 		var err error

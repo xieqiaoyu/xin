@@ -185,13 +185,24 @@ func (c *Config) GetSQLSource(id string) (driver string, source string, err erro
 }
 
 //GetRedisURI get redis connect string
-func (c *Config) GetRedisURI(id string) (string, error) {
+func (c *Config) GetRedisURI(id string) (redisURI string, err error) {
 	connectionSourceKey := fmt.Sprintf("%s.%s", "redis_connections", id)
-	redisURI := c.viper.GetString(connectionSourceKey)
+	redisURI = c.viper.GetString(connectionSourceKey)
 	if redisURI == "" {
 		return "", WrapEf(&InternalError{}, "Fail to get redis URI,pleas check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
 	}
 	return redisURI, nil
+}
+
+//GetMongoURI get mongo connect string
+func (c *Config) GetMongoURI(id string) (mongoURI string, err error) {
+	connectionSourceKey := fmt.Sprintf("%s.%s", "mongo_connections", id)
+	mongoURI = c.viper.GetString(connectionSourceKey)
+	if mongoURI == "" {
+		return "", WrapEf(&InternalError{}, "Fail to get mongo  URI,pleas check config key %s in %s", connectionSourceKey, c.viper.ConfigFileUsed())
+
+	}
+	return mongoURI, nil
 }
 
 //GrpcListen get grpc listen info

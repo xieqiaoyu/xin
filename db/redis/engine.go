@@ -47,3 +47,18 @@ func (s *Service) Engine(id string) (*redis.Client, error) {
 	}
 	return instance.(*redis.Client), nil
 }
+
+//Close Close all client in the service
+func (s *Service) Close() error {
+	var err error
+	s.instances.Range(func(key, engine interface{}) bool {
+		s.instances.Delete(key)
+		client := engine.(*redis.Client)
+		err = client.Close()
+		if err != nil {
+			return false
+		}
+		return true
+	})
+	return err
+}
