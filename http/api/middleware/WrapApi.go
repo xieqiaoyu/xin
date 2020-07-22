@@ -119,6 +119,8 @@ func XinRESTfulWrapper(env xin.Envirment) gin.HandlerFunc {
 					baseResponseObj.ErrMsg = errMsgString
 				}
 				//TODO: 更加详细的记录包括请求header 和 body
+			} else {
+				baseResponseObj.ErrMsg = errMsgString
 			}
 		}
 
